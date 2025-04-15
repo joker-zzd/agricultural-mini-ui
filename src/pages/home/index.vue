@@ -8,8 +8,13 @@
     />
 
     <!-- 分类 Tabs -->
-    <van-tabs v-model:active="activeCategory" swipeable>
-      <van-tab v-for="item in categoriesData" :title="item.name" :key="item.id">
+    <van-tabs v-model:active="activeCategory" swipeable @change="changeActive">
+      <van-tab
+        v-for="item in categoriesData"
+        :title="item.name"
+        :key="item.id"
+        :name="item.id"
+      >
         <!-- 筛选区 -->
         <div class="filter-bar">
           <van-field
@@ -41,8 +46,18 @@
           :desc="product.description"
           :thumb="product.imageUrl"
           :price="product.price"
+          :origin-price="product.originalPrice"
           currency="¥"
         >
+          <template #thumb>
+            <van-image
+              @click="handleSkipDetail(product.id)"
+              width="88"
+              height="88"
+              fit="cover"
+              :src="product.imageUrl"
+            />
+          </template>
           <template #footer>
             <van-button size="small" type="primary">立即购买</van-button>
           </template>
@@ -61,8 +76,10 @@ import {
   SearchParams,
   SearchParamsById,
 } from "@/api/home";
-import { showToast } from "vant";
+import { showToast, Image as VanImage } from "vant";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
 const search = ref("");
 const activeCategory = ref(0);
 
@@ -107,7 +124,12 @@ const onFilter = () => {
 };
 
 const getGoodsList = () => {
-  const category = categoriesData.value[activeCategory.value];
+  const category = categoriesData.value.find(
+    (item) => item.id === activeCategory.value
+  );
+
+  if (!category) return;
+
   const isAllCategory = category.id === 0;
 
   const min = priceRange.value.min;
@@ -162,15 +184,22 @@ const getCategoriesList = () => {
     })
     .catch((e) => [showToast(e.message)]);
 };
+
+const handleSkipDetail = (id: number) => {
+  router.push(`/productDetail?id=${id}`);
+};
+
+const changeActive = (active: number) => {};
 onMounted(() => {
-  getCategoriesList();
   getGoodsList();
+  getCategoriesList();
 });
 </script>
 
 <style scoped>
 .home-page {
   padding-bottom: 60px;
+  overflow-y: auto;
 }
 
 .filter-bar {

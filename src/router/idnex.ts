@@ -21,6 +21,30 @@ const routes: Array<RouteRecordRaw> = [
     meta: { showTabbar: true },
     component: () => import("../pages/home/index.vue"),
   },
+  {
+    path: "/productDetail",
+    name: "productDetail",
+    meta: { showTabbar: false },
+    component: () => import("../pages/productDetail/index.vue"),
+  },
+  {
+    path: "/cart",
+    name: "cart",
+    meta: { showTabbar: false },
+    component: () => import("../pages/cart/index.vue"),
+  },
+  {
+    path: "/me",
+    name: "me",
+    meta: { showTabbar: true },
+    component: () => import("../pages/me/index.vue"),
+  },
+  {
+    path: "/settings",
+    name: "settings",
+    meta: { showTabbar: false },
+    component: () => import("../pages/settings/index.vue"),
+  },
 ];
 
 // 创建 router 实例
