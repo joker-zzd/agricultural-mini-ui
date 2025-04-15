@@ -24,8 +24,13 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/productDetail",
     name: "productDetail",
-    meta: { showTabbar: false },
     component: () => import("../pages/productDetail/index.vue"),
+  },
+  {
+    path: "/reviews",
+    name: "reviews",
+    meta: { showTabbar: false },
+    component: () => import("../pages/reviews/index.vue"),
   },
   {
     path: "/cart",
