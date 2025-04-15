@@ -64,7 +64,7 @@ const onSubmit = debounce(async () => {
     userStore.setUserInfo(token, user);
 
     showToast("登录成功");
-    router.push("/");
+    router.push("/home");
   } else {
     showToast(res.message || "登录失败");
     return;

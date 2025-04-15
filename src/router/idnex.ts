@@ -11,6 +11,16 @@ const routes: Array<RouteRecordRaw> = [
     name: "login",
     component: () => import("../pages/login/index.vue"),
   },
+  {
+    path: "/",
+    redirect: "/home",
+  },
+  {
+    path: "/home",
+    name: "home",
+    meta: { showTabbar: true },
+    component: () => import("../pages/home/index.vue"),
+  },
 ];
 
 // 创建 router 实例
