@@ -50,6 +50,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { showTabbar: false },
     component: () => import("../pages/settings/index.vue"),
   },
+  {
+    path: "/about",
+    name: "about",
+    meta: { showTabbar: false },
+    component: () => import("../pages/about/index.vue"),
+  },
 ];
 
 // 创建 router 实例
