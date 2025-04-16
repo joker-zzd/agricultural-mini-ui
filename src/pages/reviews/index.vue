@@ -2,42 +2,70 @@
   <div class="reviews-page">
     <van-nav-bar title="所有评价" left-arrow @click-left="goBack" />
     <div class="reviews-list">
-      <div
-        v-for="(review, index) in product.reviews"
-        :key="index"
-        class="review-item"
-      >
-        <div class="review-user">
-          <span class="user-name">{{ review.userName }}</span>
-          <span class="user-rating">{{ review.rating }} ★</span>
+      <template v-if="reviewDate.length > 0">
+        <div
+          v-for="(review, index) in reviewDate"
+          :key="index"
+          class="review-item"
+        >
+          <div class="review-user">
+            <span class="user-name">{{ review.nickname }}</span>
+            <span class="user-rating">{{ review.rating }} ★</span>
+          </div>
+          <p class="review-content">{{ review.comment }}</p>
         </div>
-        <p class="review-content">{{ review.comment }}</p>
-      </div>
+      </template>
+
+      <!-- 空状态兜底 -->
+      <template v-else>
+        <div class="empty-state">
+          <img
+            class="empty-img"
+            src="https://img.yzcdn.cn/vant/empty-image-default.png"
+            alt="暂无评价"
+          />
+          <p class="empty-text">暂无评价，快来抢个沙发吧～</p>
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
+import { findByPageAndProductId } from "@/api/reviews";
+import { onMounted, ref } from "vue";
+import { showToast } from "vant";
 
 const router = useRouter();
+const route = useRoute();
+const reviewDate = ref<any[]>([]); // 初始化为空数组
 
 const goBack = () => {
   router.back();
 };
 
-// 模拟商品数据
-const product = {
-  id: 1,
-  name: "优质复合肥",
-  reviews: [
-    { userName: "张三", rating: 5, comment: "非常好用，效果显著！" },
-    { userName: "李四", rating: 4, comment: "不错，质量可以，有点贵。" },
-    { userName: "王五", rating: 3, comment: "一般般，没什么特别的感觉。" },
-    { userName: "赵六", rating: 4, comment: "挺好的，性价比高。" },
-    { userName: "孙七", rating: 5, comment: "效果非常好，值得购买！" },
-  ],
+const getDateList = (productId: number) => {
+  findByPageAndProductId(productId)
+    .then((res) => {
+      if (res.code === 0) {
+        reviewDate.value = res.data || [];
+      } else {
+        showToast("获取评价失败");
+      }
+    })
+    .catch((e) => {
+      console.error(e);
+      showToast(e.message || "数据获取失败");
+    });
 };
+
+onMounted(() => {
+  const productId = Number(route.query.productId);
+  if (productId) {
+    getDateList(productId);
+  }
+});
 </script>
 
 <style scoped>
@@ -77,5 +105,24 @@ const product = {
   color: #666;
   font-size: 14px;
   margin-top: 8px;
+}
+
+/* 空状态样式 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 100px;
+  color: #999;
+}
+
+.empty-img {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 16px;
+}
+
+.empty-text {
+  font-size: 14px;
 }
 </style>
