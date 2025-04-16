@@ -5,6 +5,11 @@ export interface UserLoginDTO {
   password: string;
 }
 
+export interface UpdatePasswordDTO {
+  oldPassword: string;
+  newPassword: string;
+}
+
 export interface LoginResponse {
   code?: number;
   message: string;
@@ -30,5 +35,30 @@ export const login = (data: UserLoginDTO) => {
     headers: {
       "Content-Type": "application/json",
     },
+  });
+};
+
+export const updateNickname = (nickname: string) => {
+  return request.put({
+    url: `/api/user/updateNickname?nickname=${nickname}`,
+  });
+};
+
+export const updateSex = (sex: string) => {
+  return request.put({
+    url: `/api/user/updateSex?sex=${sex}`,
+  });
+};
+
+export const updateavatar = (avatar: string) => {
+  return request.put({
+    url: `/api/user/updateAvatar?avatar=${avatar}`,
+  });
+};
+
+export const updatePassword = (data: UpdatePasswordDTO) => {
+  return request.post({
+    url: `/api/user/updatePassword`,
+    data,
   });
 };

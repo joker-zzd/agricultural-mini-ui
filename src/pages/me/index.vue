@@ -3,7 +3,7 @@
     <!-- 用户信息 -->
     <van-cell center>
       <template #icon>
-        <van-image round width="48" height="48" :src="userStore.headPortrait" />
+        <van-image round width="48" height="48" :src="userStore.avatar" />
       </template>
       <template #title>
         <div class="nickname">{{ userStore.nickname || "未登录" }}</div>

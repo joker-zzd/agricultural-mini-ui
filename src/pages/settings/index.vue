@@ -20,7 +20,9 @@
     </div>
 
     <div class="logout-button">
-      <van-button block type="danger" @click="logout">退出登录</van-button>
+      <van-button block type="danger" @click="logout" color="#f56c6c"
+        >退出登录</van-button
+      >
     </div>
   </div>
 </template>
@@ -36,11 +38,11 @@ const goBack = () => {
 };
 
 const goToProfileEdit = () => {
-  router.push("/profile-edit");
+  router.push("/profileEdit");
 };
 
 const goToChangePassword = () => {
-  router.push("/change-password");
+  router.push("/updatePassword");
 };
 
 const logout = () => {
@@ -50,6 +52,7 @@ const logout = () => {
   })
     .then(() => {
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
       showToast("已退出登录");
       router.replace("/login");
     })

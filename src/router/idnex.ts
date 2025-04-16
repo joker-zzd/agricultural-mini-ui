@@ -56,6 +56,18 @@ const routes: Array<RouteRecordRaw> = [
     meta: { showTabbar: false },
     component: () => import("../pages/about/index.vue"),
   },
+  {
+    path: "/profileEdit",
+    name: "profileEdit",
+    meta: { showTabbar: false },
+    component: () => import("../pages/profileEdit/index.vue"),
+  },
+  {
+    path: "/updatePassword",
+    name: "updatePassword",
+    meta: { showTabbar: false },
+    component: () => import("../pages/updatePassword/index.vue"),
+  },
 ];
 
 // 创建 router 实例
