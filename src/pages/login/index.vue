@@ -27,6 +27,13 @@
           left-icon="lock"
           :rules="[{ required: true, message: '请输入密码' }]"
         />
+
+        <div style="margin: 8px 16px">
+          <van-checkbox v-model="rememberMe" shape="square"
+            >记住密码</van-checkbox
+          >
+        </div>
+
         <div style="margin: 16px">
           <van-button round block type="primary" native-type="submit">
             登录
@@ -38,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive, ref, onMounted } from "vue";
 import { showToast } from "vant";
 import { useRouter } from "vue-router";
 import { debounce } from "lodash";
@@ -53,6 +60,16 @@ const form = reactive({
   password: "",
 });
 
+const rememberMe = ref(true);
+
+onMounted(() => {
+  const savedUsername = localStorage.getItem("savedUsername");
+  const savedPassword = localStorage.getItem("savedPassword");
+
+  if (savedUsername) form.username = savedUsername;
+  if (savedPassword) form.password = savedPassword;
+});
+
 const onSubmit = debounce(async () => {
   const res = await login(form);
   if (res.code === 0) {
@@ -64,11 +81,18 @@ const onSubmit = debounce(async () => {
 
     userStore.setUserInfo(token, user);
 
+    if (rememberMe.value) {
+      localStorage.setItem("savedUsername", form.username);
+      localStorage.setItem("savedPassword", form.password);
+    } else {
+      localStorage.removeItem("savedUsername");
+      localStorage.removeItem("savedPassword");
+    }
+
     showToast("登录成功");
     router.push("/home");
   } else {
     showToast(res.message || "登录失败");
-    return;
   }
 }, 300);
 </script>
@@ -76,7 +100,7 @@ const onSubmit = debounce(async () => {
 <style scoped>
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(to bottom, #f4fdf4, #e0f5dc); /* 柔和渐变 */
+  background: linear-gradient(to bottom, #f4fdf4, #e0f5dc);
   display: flex;
   align-items: center;
   justify-content: center;

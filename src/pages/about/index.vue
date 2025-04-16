@@ -46,6 +46,7 @@ const goBack = () => router.back();
 
 .about-content {
   padding: 20px;
+  margin-top: 10px;
   background-color: #fff;
 }
 
