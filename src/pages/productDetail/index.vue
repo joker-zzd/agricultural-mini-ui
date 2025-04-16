@@ -78,7 +78,7 @@
               v-for="sku in product.skuList"
               :key="sku.id"
               :title="sku.skuName"
-              :value="'库存: ' + sku.stock + '，价格: ¥' + sku.price"
+              :value="'库存: ' + sku.stock + '，价格: ¥' + sku.skuPrice"
               clickable
               @click="selectedSkuId = sku.id"
             >
@@ -90,6 +90,18 @@
             </van-cell>
           </van-cell-group>
         </van-radio-group>
+
+        <!-- 数量选择 -->
+        <div style="margin: 16px 0">
+          <h4 style="margin-bottom: 8px">购买数量</h4>
+          <van-stepper
+            v-model="addCaerDTO.quantity"
+            integer
+            min="1"
+            max="99"
+            default-value="1"
+          />
+        </div>
 
         <!-- 确认按钮固定底部 -->
         <div class="confirm-btn-wrapper">
@@ -106,7 +118,7 @@
 import { useRouter, useRoute } from "vue-router";
 import { showToast } from "vant";
 import { ref, onMounted } from "vue";
-import { findById } from "@/api/productDetail"; // 确保你有这个 API 方法
+import { findById, addCart, AddCaerDTO } from "@/api/productDetail";
 
 const router = useRouter();
 const route = useRoute();
@@ -125,6 +137,13 @@ const product = ref<any>({
   skuList: [],
 });
 
+const addCaerDTO = <AddCaerDTO>{
+  productId: 0,
+  skuId: 0,
+  quantity: 0,
+};
+
+//方法区
 const getProductDetail = async () => {
   const id = Number(route.query.id);
   if (!id) return;
@@ -160,10 +179,32 @@ const confirmSkuAction = () => {
   const sku = product.value.skuList.find(
     (s: any) => s.id === selectedSkuId.value
   );
-  if (!sku) return;
+  console.log(sku);
+
+  if (!sku) {
+    return;
+  }
+
+  addCaerDTO.productId = product.value.id;
+  addCaerDTO.skuId = sku.id;
 
   if (skuActionType.value === "cart") {
-    showToast(`已加入购物车：${sku.name}`);
+    addCart(addCaerDTO)
+      .then((res) => {
+        if (res.code === 0) {
+          showToast({
+            message: "加入购物车成功",
+            position: "top",
+            duration: 2000,
+          });
+        } else {
+          showToast(res.message);
+        }
+      })
+      .catch((e) => {
+        console.error(e.message);
+        showToast(e.message);
+      });
   } else {
     showToast(`购买：${sku.name}`);
     router.push("/order-confirm");
@@ -313,4 +354,8 @@ onMounted(() => {
   color: #fff;
   border-radius: 999px;
 }
+/* .van-toast {
+  color: #fff !important;
+  font-size: 14px !important;
+} */
 </style>
