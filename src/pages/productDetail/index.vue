@@ -51,15 +51,18 @@
 
     <!-- 底部按钮栏 -->
     <van-action-bar>
+      <van-action-bar-icon icon="shopping-cart-o" @click="goToCart" />
       <van-action-bar-button
         type="primary"
         text="加入购物车"
         @click="openSkuPopup('cart')"
+        class="small-button"
       />
       <van-action-bar-button
         type="warning"
         text="立即购买"
         @click="openSkuPopup('buy')"
+        class="small-button"
       />
     </van-action-bar>
 
@@ -131,6 +134,10 @@ const goToReviewsPage = () => {
   router.push(`/reviews?productId=${route.query.id}`);
 };
 
+const goToCart = () => {
+  router.push("/cart");
+};
+
 const product = ref<any>({
   imageList: [],
   reviewList: [],
@@ -179,11 +186,8 @@ const confirmSkuAction = () => {
   const sku = product.value.skuList.find(
     (s: any) => s.id === selectedSkuId.value
   );
-  console.log(sku);
 
-  if (!sku) {
-    return;
-  }
+  if (!sku) return;
 
   addCaerDTO.productId = product.value.id;
   addCaerDTO.skuId = sku.id;
@@ -334,7 +338,7 @@ onMounted(() => {
 
 .sku-popup {
   padding: 16px;
-  padding-bottom: 80px; /* 避免按钮遮挡内容 */
+  padding-bottom: 80px;
 }
 
 .confirm-btn-wrapper {
@@ -354,8 +358,11 @@ onMounted(() => {
   color: #fff;
   border-radius: 999px;
 }
-/* .van-toast {
-  color: #fff !important;
-  font-size: 14px !important;
-} */
+
+/* 缩小按钮样式 */
+.small-button {
+  width: 80px;
+  font-size: 12px;
+  padding: 0 8px;
+}
 </style>

@@ -20,6 +20,11 @@
             :thumb="item.imageUrl"
             :price="item.price"
           >
+            <template #price>
+              <div style="font-size: 14px; color: #f5222d">
+                ￥{{ item.price }}
+              </div>
+            </template>
             <template #desc>
               <div>{{ item.description }}</div>
               <div v-if="item.skuName" style="color: #888; font-size: 12px">
@@ -35,8 +40,6 @@
                 integer
               />
             </template>
-
-            <template #origin-price>¥{{ item.originalPrice }}</template>
 
             <template #footer>
               <van-checkbox :name="item.id" />
@@ -73,10 +76,8 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from "vue";
 import { useRouter } from "vue-router";
-import { showToast, Dialog, showConfirmDialog } from "vant";
-
-// 模拟接口导入
-// import { fetchCartList, updateCartQuantity, deleteCartItem } from "@/api/cart";
+import { showToast, showConfirmDialog } from "vant";
+import { findByPage, SearchParams, deleteAllById } from "@/api/cart";
 
 const router = useRouter();
 const goBack = () => router.back();
@@ -96,38 +97,35 @@ interface CartItem {
 const cartItems = ref<CartItem[]>([]);
 const checkedItems = ref<number[]>([]);
 const checkAll = ref(false);
+const searchParams = ref<SearchParams>({
+  currentPage: 1,
+  pageSize: 10,
+});
 
-// 模拟从后端获取购物车列表
-const loadCartItems = async () => {
-  cartItems.value = [
-    {
-      id: 1,
-      name: "优质复合肥",
-      description: "含氮磷钾，有机肥料",
-      imageUrl: "https://img.yzcdn.cn/vant/apple-2.jpg",
-      price: 48,
-      originalPrice: 58,
-      quantity: 1,
-      skuId: 10001,
-      skuName: "10kg装",
-    },
-    {
-      id: 2,
-      name: "高效杀虫剂",
-      description: "广谱杀虫，持久防护",
-      imageUrl: "https://img.yzcdn.cn/vant/apple-1.jpg",
-      price: 32,
-      originalPrice: 40,
-      quantity: 2,
-      skuId: 10002,
-      skuName: "500ml瓶",
-    },
-  ];
+//方法区
+const loadCartItems = () => {
+  findByPage({
+    currentPage: searchParams.value.currentPage,
+    pageSize: searchParams.value.pageSize,
+  })
+    .then((res) => {
+      if (res.code === 0) {
+        cartItems.value = res.data;
+      } else {
+        showToast(res.message);
+      }
+    })
+    .catch((e) => {
+      console.error(e.message);
+      showToast("数据获取失败");
+    });
   checkedItems.value = cartItems.value.map((item) => item.id);
   checkAll.value = true;
 };
 
-onMounted(loadCartItems);
+onMounted(() => {
+  loadCartItems();
+});
 
 watch(checkedItems, () => {
   checkAll.value = checkedItems.value.length === cartItems.value.length;
@@ -165,19 +163,31 @@ const deleteSelected = () => {
     showToast("请选择要删除的商品");
     return;
   }
+
   showConfirmDialog({
-    title: "标题",
-    message:
-      "如果解决方法是丑陋的，那就肯定还有更好的解决方法，只是还没有发现而已。",
+    title: "提示",
+    message: "确定要删除选中的商品吗？",
   })
-    .then(() => {
-      cartItems.value = cartItems.value.filter(
-        (item) => !checkedItems.value.includes(item.id)
-      );
-      checkedItems.value = [];
+    .then(async () => {
+      try {
+        const res = await deleteAllById(checkedItems.value);
+        if (res.code === 0) {
+          // 删除成功后更新本地数据
+          cartItems.value = cartItems.value.filter(
+            (item) => !checkedItems.value.includes(item.id)
+          );
+          checkedItems.value = [];
+          showToast("删除成功");
+        } else {
+          showToast(res.message || "删除失败");
+        }
+      } catch (err) {
+        console.error(err);
+        showToast("删除失败，请稍后重试");
+      }
     })
     .catch(() => {
-      // on cancel
+      // 用户取消删除
     });
 };
 
@@ -200,6 +210,7 @@ const checkout = () => {
   background-color: #f8f8f8;
   min-height: 100vh;
   padding-bottom: 90px;
+  overflow-y: auto;
 }
 
 .cart-bottom-bar {

@@ -13,6 +13,7 @@ declare module 'vue' {
     'Van-': typeof import('vant/es')['-']
     VanActionBar: typeof import('vant/es')['ActionBar']
     VanActionBarButton: typeof import('vant/es')['ActionBarButton']
+    VanActionBarIcon: typeof import('vant/es')['ActionBarIcon']
     VanButton: typeof import('vant/es')['Button']
     VanCard: typeof import('vant/es')['Card']
     VanCell: typeof import('vant/es')['Cell']
