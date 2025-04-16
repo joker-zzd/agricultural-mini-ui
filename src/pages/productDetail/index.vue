@@ -77,13 +77,15 @@
             <van-cell
               v-for="sku in product.skuList"
               :key="sku.id"
-              :title="sku.name"
+              :title="sku.skuName"
               :value="'库存: ' + sku.stock + '，价格: ¥' + sku.price"
               clickable
               @click="selectedSkuId = sku.id"
             >
               <template #right-icon>
-                <van-radio :name="sku.id" />
+                <div style="padding-left: 6px">
+                  <van-radio :name="sku.id" />
+                </div>
               </template>
             </van-cell>
           </van-cell-group>
@@ -104,6 +106,7 @@
 import { useRouter, useRoute } from "vue-router";
 import { showToast } from "vant";
 import { ref, onMounted } from "vue";
+import { findById } from "@/api/productDetail"; // 确保你有这个 API 方法
 
 const router = useRouter();
 const route = useRoute();
@@ -116,48 +119,29 @@ const goToReviewsPage = () => {
   router.push(`/reviews?productId=${route.query.id}`);
 };
 
-// 模拟数据
-const product = ref({
-  id: 1,
-  userId: 0,
-  name: "时尚T恤",
-  description: "舒适纯棉材质，潮流百搭款式",
-  price: 199,
-  originalPrice: 299,
-  brand: "潮牌",
-  stock: 100,
-  origin: "中国",
-  unit: "件",
-  sold: 200,
-  imageUrl: "",
-  createdAt: "",
-  imageList: [
-    { id: 1, image: "https://img.yzcdn.cn/vant/apple-1.jpg" },
-    { id: 2, image: "https://img.yzcdn.cn/vant/apple-2.jpg" },
-  ],
-  reviewList: [
-    {
-      id: 1,
-      rating: 4,
-      comment: "很不错的衣服",
-      createdAt: "",
-      nickname: "小王",
-    },
-    {
-      id: 2,
-      rating: 5,
-      comment: "质量很好，推荐！",
-      createdAt: "",
-      nickname: "阿丽",
-    },
-  ],
-  skuList: [
-    { id: 1, name: "红色 / XL", stock: 10, price: 199 },
-    { id: 2, name: "蓝色 / L", stock: 8, price: 189 },
-  ],
+const product = ref<any>({
+  imageList: [],
+  reviewList: [],
+  skuList: [],
 });
 
-// SKU 弹窗控制
+const getProductDetail = async () => {
+  const id = Number(route.query.id);
+  if (!id) return;
+
+  try {
+    const res = await findById(id);
+    if (res.code === 0) {
+      product.value = res.data;
+    } else {
+      showToast("获取商品详情失败");
+    }
+  } catch (e: any) {
+    showToast(e.message || "请求失败");
+  }
+};
+
+// SKU 弹窗逻辑
 const showSkuPopup = ref(false);
 const selectedSkuId = ref<number | null>(null);
 const skuActionType = ref<"cart" | "buy">("cart");
@@ -173,7 +157,9 @@ const confirmSkuAction = () => {
     return;
   }
 
-  const sku = product.value.skuList.find((s) => s.id === selectedSkuId.value);
+  const sku = product.value.skuList.find(
+    (s: any) => s.id === selectedSkuId.value
+  );
   if (!sku) return;
 
   if (skuActionType.value === "cart") {
@@ -187,7 +173,7 @@ const confirmSkuAction = () => {
 };
 
 onMounted(() => {
-  // 模拟数据，跳过 findById 请求
+  getProductDetail();
 });
 </script>
 

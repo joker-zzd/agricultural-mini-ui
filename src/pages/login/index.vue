@@ -58,6 +58,7 @@ const onSubmit = debounce(async () => {
   if (res.code === 0) {
     const token = res.data.token;
     const user = res.data.user;
+
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
 
