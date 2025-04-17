@@ -24,7 +24,7 @@
             src="https://img.yzcdn.cn/vant/empty-image-default.png"
             alt="暂无评价"
           />
-          <p class="empty-text">暂无评价，快来抢个沙发吧～</p>
+          <p class="empty-text">暂无评价～</p>
         </div>
       </template>
     </div>
