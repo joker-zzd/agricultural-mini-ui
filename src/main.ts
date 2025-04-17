@@ -7,8 +7,10 @@ import { createPinia } from "pinia";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import "vant/es/toast/style";
 import { ConfigProvider } from "vant";
+import longPress from "./directives/long-press";
 
 import "./assets/main.css";
+import "./assets/style-config.less";
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -20,5 +22,6 @@ app.use(router);
 app.use(Button);
 app.use(Toast);
 app.use(ConfigProvider);
+app.directive("long-press", longPress);
 
 app.mount("#app");

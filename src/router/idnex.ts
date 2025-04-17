@@ -74,6 +74,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { showTabbar: false },
     component: () => import("../pages/address/addAddress.vue"),
   },
+  {
+    path: "/address",
+    name: "address",
+    meta: { showTabbar: false },
+    component: () => import("../pages/address/index.vue"),
+  },
 ];
 
 // 创建 router 实例

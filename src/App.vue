@@ -52,16 +52,8 @@ const handleMessage = () => {
 </script>
 
 <style>
-.van-theme-dark body {
-  color: #f5f5f5;
-  background-color: black;
-}
-
-/* 使用 CSS 变量自定义主题色 */
-:root {
-  --van-primary-color: #89c3eb; /* 设置主色调 */
-  --van-button-primary-background: #1fa1f8; /* 设置按钮背景色 */
-  --van-button-primary-border-color: #89c3eb; /* 设置按钮边框色 */
-  --van-tabbar-item-active-color: #89c3eb; /* 设置 Tabbar 活动项颜色 */
+/* 使用更高权重选择器来兜底 */
+body .van-button--primary {
+  background-color: #1fa1f8 !important;
 }
 </style>
