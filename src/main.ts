@@ -6,6 +6,7 @@ import "vant/lib/index.css";
 import { createPinia } from "pinia";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import "vant/es/toast/style";
+import { ConfigProvider } from "vant";
 
 import "./assets/main.css";
 
@@ -18,5 +19,6 @@ app.use(pinia);
 app.use(router);
 app.use(Button);
 app.use(Toast);
+app.use(ConfigProvider);
 
 app.mount("#app");

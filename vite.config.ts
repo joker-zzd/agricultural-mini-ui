@@ -26,13 +26,14 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       less: {
-        modifyVars: {
-          hack: `true; @import (reference) "${path.resolve(
-            "src/style/variables.less"
-          )}";`,
-        },
-        math: "strict",
         javascriptEnabled: true,
+        modifyVars: {
+          // 自定义 Vant 主题色
+          "primary-color": "#89c3eb", // 这里设置主题色
+          "button-primary-background-color": "#89c3eb", // 按钮的背景色
+          "switch-on-background-color": "#89c3eb", // Switch 开关的颜色
+          // 你可以根据需要继续添加更多自定义样式
+        },
       },
     },
   },

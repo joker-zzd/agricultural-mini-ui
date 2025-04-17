@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vant/area-data": "^2.0.0",
     "axios": "^1.8.4",
     "dayjs": "^1.11.13",
     "lodash": "^4.17.21",
@@ -24,6 +25,8 @@
     "@types/vue-router": "^2.0.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/tsconfig": "^0.7.0",
+    "less": "^4.3.0",
+    "less-loader": "^12.2.0",
     "typescript": "~5.7.2",
     "unplugin-auto-import": "^19.1.2",
     "unplugin-vue-components": "^28.5.0",

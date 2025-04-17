@@ -68,6 +68,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { showTabbar: false },
     component: () => import("../pages/updatePassword/index.vue"),
   },
+  {
+    path: "/addAddress",
+    name: "addAddress",
+    meta: { showTabbar: false },
+    component: () => import("../pages/address/addAddress.vue"),
+  },
 ];
 
 // 创建 router 实例
