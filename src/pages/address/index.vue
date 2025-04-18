@@ -23,7 +23,7 @@
 
     <!-- 添加地址按钮 -->
     <div class="add-address-btn">
-      <van-button block type="primary" icon="plus" @click="onAddAddress">
+      <van-button block type="primary" icon="plus" @click="goToAddAddress">
         添加新地址
       </van-button>
     </div>
@@ -100,7 +100,7 @@ const editForm = ref({
   detail: "",
 });
 
-// 打开编辑弹窗
+// 编辑地址
 const onEditAddress = (index: number) => {
   selectedIndex.value = index;
   const addr = addresses.value[index];
@@ -117,7 +117,7 @@ const onSaveEdit = () => {
   }
 };
 
-// 删除地址相关逻辑
+// 长按弹出操作菜单
 const onLongPress = (index: number) => {
   selectedIndex.value = index;
   showAction.value = true;
@@ -140,15 +140,8 @@ const confirmDelete = () => {
   }
 };
 
-// 添加地址跳转（这里你可以也改成弹窗编辑）
-const onAddAddress = () => {
-  showEditPopup.value = true;
-  selectedIndex.value = addresses.value.length;
-  editForm.value = {
-    name: "",
-    areaText: "",
-    detail: "",
-  };
+const goToAddAddress = () => {
+  router.push("/addAddress");
 };
 
 // 返回上一页
