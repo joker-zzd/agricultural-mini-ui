@@ -27,7 +27,7 @@
         type="tel"
         :rules="[
           { required: true, message: '手机号不能为空' },
-          { pattern: /^1[3-9]\\d{9}$/, message: '手机号格式错误' },
+          { pattern: /^1[3-9]\d{9}$/, message: '手机号格式错误' },
         ]"
       />
 
@@ -36,7 +36,7 @@
         clickable
         name="area"
         label="所在地区"
-        :value="form.areaText"
+        v-model="areaDisplay"
         placeholder="请选择省市区"
         @click="showArea = true"
         :rules="[{ required: true, message: '请选择地区' }]"
@@ -50,7 +50,7 @@
       </van-popup>
 
       <van-field
-        v-model="form.detail"
+        v-model="form.addressDetail"
         name="detail"
         label="详细地址"
         placeholder="请输入详细地址"
@@ -71,7 +71,6 @@
           block
           type="primary"
           native-type="submit"
-          s
           color="#89c3eb"
         >
           保存地址
@@ -82,10 +81,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { showToast } from "vant";
 import { areaList } from "@vant/area-data";
+import { addAddress, AddAddressDTO } from "@/api/address";
 
 // 路由控制
 const router = useRouter();
@@ -94,36 +94,29 @@ const onBack = () => {
 };
 
 // 表单数据结构
-interface AddressForm {
-  name: string;
-  tel: string;
-  province: string;
-  city: string;
-  county: string;
-  areaText: string;
-  detail: string;
-  defaulted: boolean;
-}
-
-const form = ref<AddressForm>({
+const form = ref<AddAddressDTO>({
   name: "",
   tel: "",
   province: "",
   city: "",
   county: "",
-  areaText: "",
-  detail: "",
+  addressDetail: "",
   defaulted: false,
 });
 
 const showArea = ref(false);
 
+const areaDisplay = computed(() => {
+  return [form.value.province, form.value.city, form.value.county]
+    .filter(Boolean)
+    .join(" ");
+});
+
 // 地区选择确认
-const onAreaConfirm = (values: any[]) => {
-  form.value.province = values[0]?.name || "";
-  form.value.city = values[1]?.name || "";
-  form.value.county = values[2]?.name || "";
-  form.value.areaText = values.map((v) => v.name).join(" ");
+const onAreaConfirm = ({ selectedOptions }: any) => {
+  form.value.province = selectedOptions[0]?.text || "";
+  form.value.city = selectedOptions[1]?.text || "";
+  form.value.county = selectedOptions[2]?.text || "";
   showArea.value = false;
 };
 
@@ -131,14 +124,15 @@ const onAreaConfirm = (values: any[]) => {
 const onSubmit = async () => {
   try {
     console.log("提交地址：", form.value);
-
-    // TODO: 替换为你的接口调用
-    // await request.post('/api/address/add', form.value)
-
-    showToast("地址保存成功");
-    router.back(); // 保存后自动返回
-  } catch (error) {
-    showToast("保存失败");
+    const res = await addAddress(form.value);
+    if (res.code === 0) {
+      showToast("地址保存成功");
+      router.back(); // 保存后自动返回
+    } else {
+      showToast("保存失败：" + res.message);
+    }
+  } catch (error: any) {
+    showToast(error.message || "请求失败");
   }
 };
 </script>

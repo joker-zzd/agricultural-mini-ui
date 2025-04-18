@@ -15,6 +15,16 @@ export interface AddAddressDTO {
   defaulted: boolean;
 }
 
+export interface UpdateAddressDTO {
+  id: number;
+  name: string;
+  tel: string;
+  province: string;
+  city: string;
+  county: string;
+  addressDetail: string;
+}
+
 export const findByPage = (params: SearchParams) => {
   return request.get({
     url: "/api/address/findByPage",
@@ -38,6 +48,13 @@ export function deleteAllById(ids: number[]) {
 
 export const updateDefaulted = (id: number) => {
   return request.put({
-    url: `/api/address/delete?id=${id}`,
+    url: `/api/address/updateDefaulted?id=${id}`,
+  });
+};
+
+export const updateAddress = (data: UpdateAddressDTO) => {
+  return request.put({
+    url: "/api/address/update",
+    data,
   });
 };

@@ -12,13 +12,21 @@
     <van-cell-group style="margin-top: 20px">
       <van-cell
         v-for="(address, index) in addresses"
-        :key="index"
-        :title="address.name"
-        :label="address.areaText"
-        :value="address.detail"
+        :key="address.id"
+        :title="`${address.name}（${address.tel}）`"
+        :label="`${address.province} ${address.city} ${address.county} ${address.addressDetail}`"
         @click="onEditAddress(index)"
-        v-long-press="() => onLongPress(index)"
-      />
+        v-long-press="(e) => onLongPress(e, address.id)"
+      >
+        <!-- 右侧图标：表示默认地址 -->
+        <template #right-icon>
+          <van-icon
+            name="star"
+            :color="address.defaulted === true ? '#ee0a24' : '#ccc'"
+            @click.stop="setAsDefault(address.id)"
+          />
+        </template>
+      </van-cell>
     </van-cell-group>
 
     <!-- 添加地址按钮 -->
@@ -50,17 +58,24 @@
       v-model:show="showEditPopup"
       position="bottom"
       round
-      :style="{ height: '60%' }"
+      :style="{ height: '65%' }"
     >
       <div class="popup-content">
         <van-form @submit="onSaveEdit">
           <van-field v-model="editForm.name" label="姓名" required />
-          <van-field v-model="editForm.areaText" label="地区" required />
-          <van-field v-model="editForm.detail" label="详细地址" required />
+          <van-field v-model="editForm.tel" label="电话" required />
+          <van-field v-model="editForm.province" label="省份" required />
+          <van-field v-model="editForm.city" label="城市" required />
+          <van-field v-model="editForm.county" label="区县" required />
+          <van-field
+            v-model="editForm.addressDetail"
+            label="详细地址"
+            required
+          />
           <div style="margin: 16px">
-            <van-button block type="primary" native-type="submit"
-              >保存</van-button
-            >
+            <van-button block type="primary" native-type="submit">
+              保存
+            </van-button>
           </div>
         </van-form>
       </div>
@@ -69,57 +84,103 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { showToast } from "vant";
+import {
+  findByPage,
+  SearchParams,
+  deleteAllById,
+  updateDefaulted,
+  updateAddress,
+} from "@/api/address";
 
 const router = useRouter();
 
-const addresses = ref([
-  {
-    name: "张三",
-    areaText: "北京市 朝阳区",
-    detail: "北京市朝阳区某街道123号",
-  },
-  {
-    name: "李四",
-    areaText: "上海市 浦东新区",
-    detail: "上海市浦东新区某大厦456号",
-  },
-]);
+const searchParams: SearchParams = {
+  currentPage: 0,
+  pageSize: 10,
+};
+
+const addresses = ref<any[]>([]);
 
 const showAction = ref(false);
 const showConfirm = ref(false);
 const selectedIndex = ref<number | null>(null);
+const deleteIds = ref<number[]>([]);
 
 // 编辑弹窗控制
 const showEditPopup = ref(false);
 const editForm = ref({
   name: "",
-  areaText: "",
-  detail: "",
+  tel: "",
+  province: "",
+  city: "",
+  county: "",
+  addressDetail: "",
 });
 
 // 编辑地址
 const onEditAddress = (index: number) => {
   selectedIndex.value = index;
-  const addr = addresses.value[index];
-  editForm.value = { ...addr };
+  editForm.value = { ...addresses.value[index] };
   showEditPopup.value = true;
 };
 
 // 保存编辑
 const onSaveEdit = () => {
   if (selectedIndex.value !== null) {
-    addresses.value[selectedIndex.value] = { ...editForm.value };
-    showToast("保存成功");
-    showEditPopup.value = false;
+    const updatedAddress = {
+      id: addresses.value[selectedIndex.value].id,
+      name: editForm.value.name,
+      tel: editForm.value.tel,
+      province: editForm.value.province,
+      city: editForm.value.city,
+      county: editForm.value.county,
+      addressDetail: editForm.value.addressDetail,
+    };
+
+    // 调用 updateAddress 接口
+    updateAddress(updatedAddress)
+      .then((res) => {
+        if (res.code === 0) {
+          getDataList();
+          showToast("保存成功");
+          showEditPopup.value = false; // 关闭编辑弹窗
+        } else {
+          showToast(res.message);
+        }
+      })
+      .catch((e) => {
+        showToast(e.message || "保存失败");
+      });
   }
 };
 
-// 长按弹出操作菜单
-const onLongPress = (index: number) => {
-  selectedIndex.value = index;
+const setAsDefault = async (id: number) => {
+  try {
+    const res = await updateDefaulted(id);
+    if (res.code === 0) {
+      showToast("默认地址已设置");
+      getDataList(); // 后端更新成功后再刷新列表
+    } else {
+      showToast(res.message);
+    }
+  } catch (e: any) {
+    showToast(e.message || "设置失败");
+  }
+};
+
+// 长按删除操作
+const onLongPress = (e: Event, id: number) => {
+  const target = e.target as HTMLElement;
+  if (target.closest(".van-icon")) {
+    // 如果长按的是星星图标，就不弹出删除菜单
+    return;
+  }
+
+  deleteIds.value = [id];
+  selectedIndex.value = id;
   showAction.value = true;
 };
 
@@ -134,20 +195,52 @@ const onActionSelect = (action: any) => {
 
 const confirmDelete = () => {
   if (selectedIndex.value !== null) {
-    addresses.value.splice(selectedIndex.value, 1);
-    showToast("删除成功");
-    selectedIndex.value = null;
+    deleteAllById(deleteIds.value)
+      .then((res) => {
+        if (res.code === 0) {
+          showToast("删除成功");
+          deleteIds.value = [];
+          selectedIndex.value = null;
+          getDataList();
+        } else {
+          showToast(res.message);
+        }
+      })
+      .catch((e) => {
+        showToast(e.message);
+      });
   }
 };
 
+// 跳转添加地址页面
 const goToAddAddress = () => {
   router.push("/addAddress");
+};
+
+// 获取地址列表
+const getDataList = () => {
+  findByPage(searchParams)
+    .then((res) => {
+      if (res.code === 0) {
+        addresses.value = res.data;
+        console.log(addresses.value);
+      } else {
+        showToast(res.message);
+      }
+    })
+    .catch((e) => {
+      showToast(e.message);
+    });
 };
 
 // 返回上一页
 const onBack = () => {
   router.back();
 };
+
+onMounted(() => {
+  getDataList();
+});
 </script>
 
 <style scoped>
@@ -156,6 +249,7 @@ const onBack = () => {
   bottom: 16px;
   left: 16px;
   right: 16px;
+  z-index: 10;
 }
 .popup-content {
   padding: 16px;
