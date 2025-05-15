@@ -223,7 +223,6 @@ const getDataList = () => {
     .then((res) => {
       if (res.code === 0) {
         addresses.value = res.data;
-        console.log(addresses.value);
       } else {
         showToast(res.message);
       }

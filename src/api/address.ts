@@ -6,6 +6,7 @@ export interface SearchParams {
 }
 
 export interface AddAddressDTO {
+  id: number;
   name: string;
   tel: string;
   province: string;

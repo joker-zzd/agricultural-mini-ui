@@ -68,6 +68,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/store/user";
+import { showToast } from "vant";
 
 const userStore = useUserStore().user;
 
@@ -82,9 +83,11 @@ const goToSettings = () => router.push("/settings");
 const goToOrderList = () => router.push("/orders");
 const goToOrder = (status: string) => router.push(`/orders?status=${status}`);
 const goToAddress = () => router.push("/address");
-const goToFavorites = () => router.push("/favorites");
+const goToFavorites = () => {
+  showToast("敬请期待");
+};
 const contactService = () => {
-  window.location.href = "tel:400-1234-567";
+  showToast("敬请期待");
 };
 const goToAbout = () => router.push("/about");
 </script>

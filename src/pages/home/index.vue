@@ -188,11 +188,15 @@ const getCategoriesList = () => {
 const handleSkipDetail = (id: number) => {
   router.push(`/productDetail?id=${id}`);
 };
+const toPayment = async () => {
+  window.open("http://localhost:8082/mini/api/alipay/pay?id=16");
+};
 
 const changeActive = (active: number) => {};
 onMounted(() => {
   getGoodsList();
   getCategoriesList();
+  // toPayment();
 });
 </script>
 

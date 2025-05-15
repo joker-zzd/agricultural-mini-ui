@@ -85,7 +85,7 @@ import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { showToast } from "vant";
 import { areaList } from "@vant/area-data";
-import { addAddress, AddAddressDTO } from "@/api/address";
+import { addAddress, AddAddressDTO, updateDefaulted } from "@/api/address";
 
 // 路由控制
 const router = useRouter();
@@ -95,6 +95,7 @@ const onBack = () => {
 
 // 表单数据结构
 const form = ref<AddAddressDTO>({
+  id: 0,
   name: "",
   tel: "",
   province: "",
@@ -123,11 +124,14 @@ const onAreaConfirm = ({ selectedOptions }: any) => {
 // 提交表单
 const onSubmit = async () => {
   try {
-    console.log("提交地址：", form.value);
     const res = await addAddress(form.value);
     if (res.code === 0) {
       showToast("地址保存成功");
       router.back(); // 保存后自动返回
+      if (form.value.defaulted === true) {
+        let id = res.data;
+        updateDefaulted(id).then((res1) => {});
+      }
     } else {
       showToast("保存失败：" + res.message);
     }
