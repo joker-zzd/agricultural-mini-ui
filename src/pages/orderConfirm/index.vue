@@ -55,10 +55,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, inject, Ref } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAddressStore } from "@/store/user";
 import { showToast } from "vant";
+import { pay, PayParams } from "@/api/pay";
 
 const route = useRoute();
 const router = useRouter();
@@ -69,6 +70,12 @@ const showAll = ref(false);
 
 const receiver = ref({
   address: "",
+});
+
+const payParams = ref<PayParams>({
+  orderNo: "11",
+  totalAmount: 10,
+  subject: "订单支付",
 });
 
 onMounted(() => {
@@ -108,6 +115,35 @@ const submitOrder = () => {
     address: receiver.value,
   });
   // TODO: 调用下单接口
+  payParams.value = {
+    orderNo: "ORDER" + Date.now(), // 示例订单号
+    totalAmount: totalPrice.value,
+    subject: "农资商城订单支付",
+  };
+  pay(payParams.value)
+    .then((htmlForm) => {
+      // htmlForm 是支付宝返回的支付表单（字符串）
+      if (htmlForm) {
+        // 创建一个容器插入到 body
+        const div = document.createElement("div");
+        div.style.display = "none";
+        div.innerHTML = htmlForm;
+        document.body.appendChild(div);
+
+        // 自动提交表单，支付宝页面会跳转
+        const form = div.querySelector("form");
+        if (form) {
+          form.submit();
+        } else {
+          showToast({ message: "支付表单解析失败", type: "fail" });
+        }
+      } else {
+        showToast({ message: "支付失败，未返回支付表单", type: "fail" });
+      }
+    })
+    .catch(() => {
+      showToast({ message: "支付请求失败", type: "fail" });
+    });
 };
 
 const selectAddress = () => {
@@ -122,6 +158,13 @@ const goBack = () => {
 <style scoped>
 .order-confirm-page {
   padding-bottom: 60px;
+}
+
+.compact-card {
+  margin: 8px 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fff;
 }
 
 /* 卡片压缩高度 */
