@@ -55,11 +55,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, inject, Ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useAddressStore } from "@/store/user";
+import { showToast } from "vant";
 
 const route = useRoute();
 const router = useRouter();
+const addressStore = useAddressStore();
 
 const orderData = ref<any[]>([]);
 const showAll = ref(false);
@@ -77,6 +80,12 @@ onMounted(() => {
       console.error("订单数据解析失败:", err);
     }
   }
+  // 获取默认地址
+  const addr = addressStore.defaultAddress || addressStore.selectedAddress;
+
+  if (addr) {
+    receiver.value.address = `${addr.province} ${addr.city} ${addr.county} ${addr.addressDetail}`;
+  }
 });
 
 const visibleItems = computed(() => {
@@ -89,7 +98,10 @@ const totalPrice = computed(() =>
 
 const submitOrder = () => {
   if (!receiver.value.address) {
-    return window.$toast?.fail?.("请先选择收货地址");
+    showToast({
+      message: "请先选择收货地址",
+      type: "fail",
+    });
   }
   console.log("提交订单", {
     items: orderData.value,
@@ -99,7 +111,7 @@ const submitOrder = () => {
 };
 
 const selectAddress = () => {
-  receiver.value.address = "北京市朝阳区建国门外大街100号";
+  router.push({ path: "/address", query: { from: "select" } });
 };
 
 const goBack = () => {

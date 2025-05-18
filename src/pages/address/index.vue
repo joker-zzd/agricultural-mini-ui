@@ -84,8 +84,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { onMounted, provide, ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { showToast } from "vant";
 import {
   findByPage,
@@ -94,8 +94,11 @@ import {
   updateDefaulted,
   updateAddress,
 } from "@/api/address";
+import { useAddressStore } from "@/store/user";
 
 const router = useRouter();
+const route = useRoute();
+const addressStore = useAddressStore();
 
 const searchParams: SearchParams = {
   currentPage: 0,
@@ -108,6 +111,7 @@ const showAction = ref(false);
 const showConfirm = ref(false);
 const selectedIndex = ref<number | null>(null);
 const deleteIds = ref<number[]>([]);
+const defaultAddress = ref<any>({});
 
 // 编辑弹窗控制
 const showEditPopup = ref(false);
@@ -122,6 +126,12 @@ const editForm = ref({
 
 // 编辑地址
 const onEditAddress = (index: number) => {
+  const address = addresses.value[index];
+  if (route.query.from === "select") {
+    addressStore.setDefaultAddress(address);
+    router.back();
+    return;
+  }
   selectedIndex.value = index;
   editForm.value = { ...addresses.value[index] };
   showEditPopup.value = true;
@@ -223,6 +233,12 @@ const getDataList = () => {
     .then((res) => {
       if (res.code === 0) {
         addresses.value = res.data;
+
+        //筛选默认地址
+        defaultAddress.value = res.data.find(
+          (item: any) => item.defaulted === true
+        );
+        addressStore.setDefaultAddress(defaultAddress.value);
       } else {
         showToast(res.message);
       }
