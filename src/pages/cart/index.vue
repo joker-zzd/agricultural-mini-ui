@@ -78,6 +78,7 @@ import { ref, onMounted, watch, computed } from "vue";
 import { useRouter } from "vue-router";
 import { showToast, showConfirmDialog } from "vant";
 import { findByPage, SearchParams, deleteAllById } from "@/api/cart";
+import { createOrder, CreateOrder } from "@/api/order";
 
 const router = useRouter();
 const goBack = () => router.back();
@@ -100,6 +101,11 @@ const checkAll = ref(false);
 const searchParams = ref<SearchParams>({
   currentPage: 1,
   pageSize: 10,
+});
+
+const createOrderParams = ref<CreateOrder>({
+  totalAmount: 0,
+  orderItems: [],
 });
 
 //方法区
@@ -202,7 +208,23 @@ const checkout = () => {
   );
   const data = encodeURIComponent(JSON.stringify(selectedItems));
 
-  router.push({ path: "/orderConfirm", query: { data } });
+  createOrderParams.value = {
+    totalAmount: totalPrice.value,
+    orderItems: selectedItems.map((item) => ({
+      productId: item.id,
+      quantity: item.quantity,
+      price: item.price * item.quantity,
+    })),
+  };
+  createOrder({
+    ...createOrderParams.value,
+  }).then((res) => {
+    if (res.code === 0) {
+      router.push({ path: "/orderConfirm", query: { data } });
+    } else {
+      showToast(res.message || "订单创建失败");
+    }
+  });
 };
 </script>
 
