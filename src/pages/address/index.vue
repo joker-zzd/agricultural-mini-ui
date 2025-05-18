@@ -233,12 +233,6 @@ const getDataList = () => {
     .then((res) => {
       if (res.code === 0) {
         addresses.value = res.data;
-
-        //筛选默认地址
-        defaultAddress.value = res.data.find(
-          (item: any) => item.defaulted === true
-        );
-        addressStore.setDefaultAddress(defaultAddress.value);
       } else {
         showToast(res.message);
       }

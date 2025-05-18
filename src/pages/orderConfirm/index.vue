@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAddressStore } from "@/store/user";
 import { showToast } from "vant";
@@ -87,8 +87,16 @@ onMounted(() => {
       console.error("订单数据解析失败:", err);
     }
   }
-  // 获取默认地址
-  const addr = addressStore.defaultAddress || addressStore.selectedAddress;
+  // // 获取默认地址
+  // const addr = addressStore.defaultAddress || addressStore.selectedAddress;
+
+  // if (addr) {
+  //   receiver.value.address = `${addr.province} ${addr.city} ${addr.county} ${addr.addressDetail}`;
+  // }
+});
+watchEffect(() => {
+  const addr = addressStore.defaultAddress;
+  console.log("地址", addr);
 
   if (addr) {
     receiver.value.address = `${addr.province} ${addr.city} ${addr.county} ${addr.addressDetail}`;

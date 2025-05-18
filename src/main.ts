@@ -8,6 +8,7 @@ import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import "vant/es/toast/style";
 import { ConfigProvider } from "vant";
 import longPress from "./directives/long-press";
+import { useAddressStore } from "@/store/user";
 
 import "./assets/main.css";
 import "./assets/style-config.less";
@@ -23,5 +24,8 @@ app.use(Button);
 app.use(Toast);
 app.use(ConfigProvider);
 app.directive("long-press", longPress);
+
+const addressStore = useAddressStore();
+addressStore.loadDefaultAddress();
 
 app.mount("#app");
