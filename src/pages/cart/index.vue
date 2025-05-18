@@ -201,7 +201,8 @@ const checkout = () => {
     checkedItems.value.includes(item.id)
   );
   const data = encodeURIComponent(JSON.stringify(selectedItems));
-  router.push({ path: "/order-confirm", query: { data } });
+
+  router.push({ path: "/orderConfirm", query: { data } });
 };
 </script>
 

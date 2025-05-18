@@ -80,6 +80,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { showTabbar: false },
     component: () => import("../pages/address/index.vue"),
   },
+  {
+    path: "/orderConfirm",
+    name: "orderConfirm",
+    meta: { showTabbar: false },
+    component: () => import("../pages/orderConfirm/index.vue"),
+  },
 ];
 
 // 创建 router 实例

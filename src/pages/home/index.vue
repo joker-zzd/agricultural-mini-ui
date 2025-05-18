@@ -189,7 +189,7 @@ const handleSkipDetail = (id: number) => {
   router.push(`/productDetail?id=${id}`);
 };
 const toPayment = async () => {
-  window.open("http://localhost:8082/mini/api/alipay/pay?id=16");
+  window.open("http://localhost:8082/mini/api/alipay/pay?id=19");
 };
 
 const changeActive = (active: number) => {};
