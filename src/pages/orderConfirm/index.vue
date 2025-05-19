@@ -68,6 +68,7 @@ const addressStore = useAddressStore();
 
 const orderData = ref<any[]>([]);
 const showAll = ref(false);
+const orderNo = ref<string>("");
 
 const receiver = ref({
   address: "",
@@ -80,6 +81,19 @@ const payParams = ref<PayParams>({
 });
 
 onMounted(() => {
+  //获取订单编号
+  getOrderNo()
+    .then((res) => {
+      if (res.code === 0) {
+        orderNo.value = res.data;
+      } else {
+        showToast(res.message);
+      }
+    })
+    .catch((e) => {
+      console.error(e.message);
+      showToast("获取订单编号失败");
+    });
   const encodeData = route.query.data;
   if (encodeData) {
     try {
@@ -89,20 +103,6 @@ onMounted(() => {
       console.error("订单数据解析失败:", err);
     }
   }
-
-  //获取订单编号
-  getOrderNo()
-    .then((res) => {
-      if (res.code === 0) {
-        payParams.value.orderNo = res.data;
-      } else {
-        showToast(res.message);
-      }
-    })
-    .catch((e) => {
-      console.error(e.message);
-      showToast("获取订单编号失败");
-    });
 });
 watchEffect(() => {
   const addr = addressStore.defaultAddress;
@@ -132,11 +132,11 @@ const submitOrder = () => {
     items: orderData.value,
     address: receiver.value,
   });
-  // TODO: 调用下单接口
+  // 调用下单接口
   payParams.value = {
-    orderNo: payParams.value.orderNo, // 示例订单号
+    orderNo: orderNo.value,
     totalAmount: totalPrice.value,
-    subject: "订单编号：" + payParams.value.orderNo,
+    subject: "订单编号：" + orderNo.value,
   };
   pay(payParams.value)
     .then((htmlForm) => {

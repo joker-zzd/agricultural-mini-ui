@@ -21,3 +21,18 @@ export const getOrderNo = () => {
     url: "api/order/latestOrderNo",
   });
 };
+
+// export const updateOrderStatusAndPaymentMethod = (
+//   orderNo: string,
+//   status: string,
+//   paymentMethod: string
+// ) => {
+//   return request.put({
+//     url: "api/order/updateOrderStatusAndPaymentMethod",
+//     data: {
+//       orderNo,
+//       status,
+//       paymentMethod,
+//     },
+//   });
+// };
