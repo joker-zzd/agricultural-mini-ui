@@ -86,6 +86,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { showTabbar: false },
     component: () => import("../pages/orderConfirm/index.vue"),
   },
+  {
+    path: "/toBePaid",
+    name: "toBePaid",
+    meta: { showTabbar: false },
+    component: () => import("../pages/orderConfirm/toBePaid.vue"),
+  },
 ];
 
 // 创建 router 实例

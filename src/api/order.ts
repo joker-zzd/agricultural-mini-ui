@@ -15,3 +15,9 @@ export const createOrder = (data: CreateOrder) => {
     data,
   });
 };
+
+export const getOrderNo = () => {
+  return request.get({
+    url: "api/order/latestOrderNo",
+  });
+};

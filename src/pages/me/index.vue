@@ -81,7 +81,7 @@ const user = ref({
 
 const goToSettings = () => router.push("/settings");
 const goToOrderList = () => router.push("/orders");
-const goToOrder = (status: string) => router.push(`/orders?status=${status}`);
+const goToOrder = (status: string) => router.push(`/toBePaid?status=${status}`);
 const goToAddress = () => router.push("/address");
 const goToFavorites = () => {
   showToast("敬请期待");

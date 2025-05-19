@@ -60,6 +60,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useAddressStore } from "@/store/user";
 import { showToast } from "vant";
 import { pay, PayParams } from "@/api/pay";
+import { getOrderNo } from "@/api/order";
 
 const route = useRoute();
 const router = useRouter();
@@ -83,16 +84,25 @@ onMounted(() => {
   if (encodeData) {
     try {
       orderData.value = JSON.parse(decodeURIComponent(encodeData as string));
+      console.log("订单数据", orderData.value);
     } catch (err) {
       console.error("订单数据解析失败:", err);
     }
   }
-  // // 获取默认地址
-  // const addr = addressStore.defaultAddress || addressStore.selectedAddress;
 
-  // if (addr) {
-  //   receiver.value.address = `${addr.province} ${addr.city} ${addr.county} ${addr.addressDetail}`;
-  // }
+  //获取订单编号
+  getOrderNo()
+    .then((res) => {
+      if (res.code === 0) {
+        payParams.value.orderNo = res.data;
+      } else {
+        showToast(res.message);
+      }
+    })
+    .catch((e) => {
+      console.error(e.message);
+      showToast("获取订单编号失败");
+    });
 });
 watchEffect(() => {
   const addr = addressStore.defaultAddress;
@@ -124,9 +134,9 @@ const submitOrder = () => {
   });
   // TODO: 调用下单接口
   payParams.value = {
-    orderNo: "ORDER" + Date.now(), // 示例订单号
+    orderNo: payParams.value.orderNo, // 示例订单号
     totalAmount: totalPrice.value,
-    subject: "农资商城订单支付",
+    subject: "订单编号：" + payParams.value.orderNo,
   };
   pay(payParams.value)
     .then((htmlForm) => {
