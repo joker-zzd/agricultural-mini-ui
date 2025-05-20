@@ -90,7 +90,7 @@ const routes: Array<RouteRecordRaw> = [
     path: "/toBePaid",
     name: "toBePaid",
     meta: { showTabbar: false },
-    component: () => import("../pages/orderConfirm/toBePaid.vue"),
+    component: () => import("../pages/order/toBePaid.vue"),
   },
   {
     path: "/orders",
