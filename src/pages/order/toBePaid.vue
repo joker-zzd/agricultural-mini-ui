@@ -69,28 +69,31 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import { showToast, showConfirmDialog } from "vant";
 import { useRouter } from "vue-router";
 import { deleteAllById, findByPage } from "@/api/order";
+import dayjs from "dayjs";
 
-const orderData = ref([
-  {
-    id: 1,
-    orderNo: "",
-    totalAmount: 0,
-    remainingSeconds: 3600,
-    orderItem: [
-      {
-        id: 1,
-        productId: "",
-        price: 0,
-        image: "",
-        name: "",
-        description: "",
-      },
-    ],
-  },
-]);
+interface OrderItem {
+  id: number;
+  productId: number;
+  price: number;
+  image: string;
+  name: string;
+  description: string;
+  quantity: number;
+}
+
+interface Order {
+  id: number;
+  orderNo: string;
+  totalAmount: number;
+  createdAt: string;
+  orderItem: OrderItem[];
+  remainingSeconds: number;
+  _expiredHandled?: boolean;
+}
+
+const orderData = ref<Order[]>([]);
 const currentPage = ref(1);
 const pageSize = ref(4);
-
 let timer: ReturnType<typeof setInterval>;
 
 const getDataList = () => {
@@ -99,7 +102,16 @@ const getDataList = () => {
     pageSize: pageSize.value,
     status: "WAIT_PAYMENT",
   }).then((res) => {
-    orderData.value = res.data;
+    const now = dayjs();
+    orderData.value = res.data.map((order: any) => {
+      const createdAt = dayjs(order.createdAt);
+      const diffSeconds = 24 * 60 * 60 - now.diff(createdAt, "second");
+      return {
+        ...order,
+        remainingSeconds: diffSeconds > 0 ? diffSeconds : 0,
+        _expiredHandled: false,
+      };
+    });
   });
 };
 
@@ -130,15 +142,30 @@ const cancelOrder = (id: number) => {
       });
     })
     .catch(() => {
-      // 用户点击了取消，什么都不做
+      // 用户取消
     });
 };
 
 onMounted(() => {
   getDataList();
+
   timer = setInterval(() => {
-    orderData.value.forEach((order) => {
-      if (order.remainingSeconds > 0) order.remainingSeconds--;
+    orderData.value.forEach((order, index) => {
+      if (order.remainingSeconds > 0) {
+        order.remainingSeconds--;
+      }
+
+      if (order.remainingSeconds <= 0 && !order._expiredHandled) {
+        order._expiredHandled = true;
+        deleteAllById([order.id]).then((res) => {
+          if (res.code === 0) {
+            showToast("订单已超时，自动取消");
+            orderData.value.splice(index, 1);
+          } else {
+            showToast("自动取消失败：" + res.message);
+          }
+        });
+      }
     });
   }, 1000);
 });
