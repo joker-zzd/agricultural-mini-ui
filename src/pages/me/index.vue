@@ -9,49 +9,30 @@
         <div class="nickname">{{ userStore.nickname || "未登录" }}</div>
       </template>
       <template #right-icon>
-        <van-icon name="setting-o" size="20" @click="goToSettings" />
+        <router-link to="/settings">
+          <van-icon name="setting-o" size="20" />
+        </router-link>
       </template>
     </van-cell>
 
     <!-- 我的订单 -->
-    <van-cell title="我的订单" is-link @click="goToOrderList">
+    <van-cell title="我的订单" is-link to="/orders">
       <template #right-icon>
         <van-icon name="arrow" />
       </template>
     </van-cell>
     <div class="order-status-grid">
       <van-grid :column-num="4" clickable>
-        <van-grid-item
-          icon="pending-payment"
-          text="待付款"
-          @click="goToOrder('PENDING')"
-        />
-        <van-grid-item
-          icon="tosend"
-          text="待发货"
-          @click="goToOrder('TO_SEND')"
-        />
-        <van-grid-item
-          icon="logistics"
-          text="运输中"
-          @click="goToOrder('SHIPPING')"
-        />
-        <van-grid-item
-          icon="after-sale"
-          text="售后/退款"
-          @click="goToOrder('AFTER_SALE')"
-        />
+        <van-grid-item icon="pending-payment" text="待付款" to="/toBePaid" />
+        <van-grid-item icon="tosend" text="待发货" to="/toBePaid" />
+        <van-grid-item icon="logistics" text="运输中" to="/toBePaid" />
+        <van-grid-item icon="after-sale" text="售后/退款" to="/toBePaid" />
       </van-grid>
     </div>
 
     <!-- 常用功能 -->
     <van-cell-group>
-      <van-cell
-        title="地址管理"
-        icon="location-o"
-        is-link
-        @click="goToAddress"
-      />
+      <van-cell title="地址管理" icon="location-o" is-link to="/address" />
       <van-cell title="我的收藏" icon="star-o" is-link @click="goToFavorites" />
       <van-cell
         title="联系客服"
@@ -59,37 +40,23 @@
         is-link
         @click="contactService"
       />
-      <van-cell title="关于我们" icon="info-o" is-link @click="goToAbout" />
+      <van-cell title="关于我们" icon="info-o" is-link to="/about" />
     </van-cell-group>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRouter } from "vue-router";
 import { useUserStore } from "@/store/user";
 import { showToast } from "vant";
 
 const userStore = useUserStore().user;
 
-const router = useRouter();
-
-const user = ref({
-  nickname: "农资小王",
-  avatar: "https://img.yzcdn.cn/vant/cat.jpeg",
-});
-
-const goToSettings = () => router.push("/settings");
-const goToOrderList = () => router.push("/orders");
-const goToOrder = (status: string) => router.push(`/toBePaid?status=${status}`);
-const goToAddress = () => router.push("/address");
 const goToFavorites = () => {
   showToast("敬请期待");
 };
 const contactService = () => {
   showToast("敬请期待");
 };
-const goToAbout = () => router.push("/about");
 </script>
 
 <style scoped>
