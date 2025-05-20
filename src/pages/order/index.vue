@@ -48,7 +48,9 @@
                 @click="copyOrderNo(order.orderNo)"
               />
             </div>
-            <van-tag type="primary">{{ order.status }}</van-tag>
+            <van-tag :type="orderStatusColorMap[order.status] || 'primary'">{{
+              order.status
+            }}</van-tag>
           </div>
 
           <!-- 每个商品 -->
@@ -75,7 +77,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { showToast } from "vant";
+import { showToast, TagType } from "vant";
 import { findByPage } from "@/api/order";
 
 // 枚举转中文
@@ -85,6 +87,14 @@ const orderStatusMap: Record<string, string> = {
   WAIT_RECEIVE: "待收货",
   FINISHED: "已完成",
   CANCELED: "已取消",
+};
+
+const orderStatusColorMap: Record<string, TagType> = {
+  待付款: "danger",
+  待发货: "warning",
+  待收货: "primary",
+  已完成: "success",
+  已取消: "default",
 };
 
 const router = useRouter();
@@ -131,7 +141,7 @@ const getOrderList = async (isRefresh = false) => {
     setTimeout(() => {
       refreshing.value = false;
       loading.value = false;
-    }, 500);
+    }, 1000);
   }
 };
 
@@ -156,7 +166,7 @@ const goToOrderDetail = (orderId: string) => {
 
 // 返回上一页
 const goBack = () => {
-  router.back();
+  router.push("/me");
 };
 
 // 搜索
