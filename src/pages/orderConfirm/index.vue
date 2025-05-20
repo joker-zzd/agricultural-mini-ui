@@ -60,7 +60,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useAddressStore } from "@/store/user";
 import { showToast } from "vant";
 import { pay, PayParams } from "@/api/pay";
-import { getOrderNo } from "@/api/order";
+import { getOrderNo, updateShippingAddress } from "@/api/order";
 
 const route = useRoute();
 const router = useRouter();
@@ -69,6 +69,7 @@ const addressStore = useAddressStore();
 const orderData = ref<any[]>([]);
 const showAll = ref(false);
 const orderNo = ref<string>("");
+const id = ref<number>(0);
 
 const receiver = ref({
   address: "",
@@ -85,7 +86,8 @@ onMounted(() => {
   getOrderNo()
     .then((res) => {
       if (res.code === 0) {
-        orderNo.value = res.data;
+        orderNo.value = res.data.orderNo;
+        id.value = res.data.id;
       } else {
         showToast(res.message);
       }
@@ -162,6 +164,13 @@ const submitOrder = () => {
     .catch(() => {
       showToast({ message: "支付请求失败", type: "fail" });
     });
+
+  updateShippingAddress(id.value, receiver.value.address).then((res) => {
+    if (res.code === 0) {
+    } else {
+      showToast(res.message);
+    }
+  });
 };
 
 const selectAddress = () => {

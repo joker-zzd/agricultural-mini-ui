@@ -36,3 +36,9 @@ export const findByPage = (params: any) => {
     params,
   });
 };
+
+export const updateShippingAddress = (id: number, address: string) => {
+  return request.put({
+    url: `/api/order/updateAddress?id=${id}&address=${address}`,
+  });
+};
