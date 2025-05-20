@@ -9,6 +9,14 @@ export interface CreateOrder {
   }[];
 }
 
+export const orderStatusMap: Record<string, string> = {
+  WAIT_PAYMENT: "待付款",
+  WAIT_DELIVER: "待发货",
+  WAIT_RECEIVE: "待收货",
+  FINISHED: "已完成",
+  CANCELED: "已取消",
+};
+
 export const createOrder = (data: CreateOrder) => {
   return request.post({
     url: "api/order/add",
@@ -22,17 +30,9 @@ export const getOrderNo = () => {
   });
 };
 
-// export const updateOrderStatusAndPaymentMethod = (
-//   orderNo: string,
-//   status: string,
-//   paymentMethod: string
-// ) => {
-//   return request.put({
-//     url: "api/order/updateOrderStatusAndPaymentMethod",
-//     data: {
-//       orderNo,
-//       status,
-//       paymentMethod,
-//     },
-//   });
-// };
+export const findByPage = (params: any) => {
+  return request.get({
+    url: "/api/order/pageByPage",
+    params,
+  });
+};

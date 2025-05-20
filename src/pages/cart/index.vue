@@ -214,6 +214,7 @@ const checkout = () => {
       productId: item.id,
       quantity: item.quantity,
       price: item.price * item.quantity,
+      image: item.imageUrl,
     })),
   };
   createOrder({
