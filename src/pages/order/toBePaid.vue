@@ -120,9 +120,14 @@ const cancelOrder = (id: number) => {
     message: "你确定要取消该订单吗？",
   })
     .then(() => {
-      showToast("订单已取消");
-      orderData.value = orderData.value.filter((order) => order.id !== id);
-      deleteAllById([id]);
+      deleteAllById([id]).then((res) => {
+        if (res.code === 0) {
+          showToast("订单取消成功");
+          getDataList();
+        } else {
+          showToast(res.message);
+        }
+      });
     })
     .catch(() => {
       // 用户点击了取消，什么都不做
