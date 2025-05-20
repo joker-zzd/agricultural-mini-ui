@@ -9,10 +9,10 @@
       safe-area-inset-top
     />
 
-    <van-empty v-if="orders.length === 0" description="暂无待付款订单" />
+    <van-empty v-if="orderData.length === 0" description="暂无待付款订单" />
 
     <div v-else>
-      <div v-for="order in orders" :key="order.id" class="order-card">
+      <div v-for="order in orderData" :key="order.id" class="order-card">
         <!-- 订单头部 -->
         <div class="order-header">
           <div class="order-id">订单号：{{ order.orderNo }}</div>
@@ -20,18 +20,18 @@
         </div>
 
         <!-- 商品列表 -->
-        <div v-for="item in order.items" :key="item.id" class="product-row">
+        <div v-for="item in order.orderItem" :key="item.id" class="product-row">
           <img :src="item.image" class="thumb" />
           <div class="product-info">
             <div class="name">{{ item.name }}</div>
-            <div class="desc">{{ item.desc }}</div>
+            <div class="desc">{{ item.description }}</div>
             <div class="price">￥{{ item.price.toFixed(2) }}</div>
           </div>
         </div>
 
         <!-- 底部信息 -->
         <div class="order-info">
-          <div class="price">应付金额：￥{{ order.amount }}</div>
+          <div class="price">应付金额：￥{{ order.totalAmount }}</div>
           <div class="countdown">
             倒计时：
             <span v-if="order.remainingSeconds > 0">
@@ -58,14 +58,6 @@
           >
             取消订单
           </van-button>
-          <van-button
-            size="small"
-            plain
-            type="danger"
-            @click="deleteOrder(order.id)"
-          >
-            删除订单
-          </van-button>
         </div>
       </div>
     </div>
@@ -74,44 +66,40 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import { showToast, Dialog } from "vant";
+import { showToast, showConfirmDialog } from "vant";
 import { useRouter } from "vue-router";
+import { deleteAllById, findByPage } from "@/api/order";
 
-// 示例数据：一个订单多个商品
-const orders = ref([
+const orderData = ref([
   {
     id: 1,
-    orderNo: "202405201001",
-    amount: 199.0,
-    createdAt: new Date().getTime() - 1000 * 60 * 30, // 30分钟前创建
-    remainingSeconds: 0,
-    items: [
+    orderNo: "",
+    totalAmount: 0,
+    remainingSeconds: 3600,
+    orderItem: [
       {
-        id: 101,
-        name: "玉米种子 A",
-        desc: "高产抗旱",
-        image: "https://via.placeholder.com/80",
-        price: 99.0,
-      },
-      {
-        id: 102,
-        name: "化肥 B",
-        desc: "复合肥料",
-        image: "https://via.placeholder.com/80",
-        price: 100.0,
+        id: 1,
+        productId: "",
+        price: 0,
+        image: "",
+        name: "",
+        description: "",
       },
     ],
   },
 ]);
+const currentPage = ref(1);
+const pageSize = ref(4);
 
 let timer: ReturnType<typeof setInterval>;
 
-const calculateCountdown = () => {
-  const now = new Date().getTime();
-  orders.value.forEach((order) => {
-    const deadline = order.createdAt + 24 * 60 * 60 * 1000;
-    const diff = Math.max(0, Math.floor((deadline - now) / 1000));
-    order.remainingSeconds = diff;
+const getDataList = () => {
+  findByPage({
+    currentPage: currentPage.value,
+    pageSize: pageSize.value,
+    status: "WAIT_PAYMENT",
+  }).then((res) => {
+    orderData.value = res.data;
   });
 };
 
@@ -127,29 +115,24 @@ const payNow = (id: number) => {
 };
 
 const cancelOrder = (id: number) => {
-  showToast("订单已取消");
-  orders.value = orders.value.filter((order) => order.id !== id);
-};
-
-const deleteOrder = (id: number) => {
-  Dialog.confirm({
-    title: "确认删除",
-    message: "删除后将无法恢复，是否确认？",
+  showConfirmDialog({
+    title: "取消确认",
+    message: "你确定要取消该订单吗？",
   })
     .then(() => {
-      orders.value = orders.value.filter((order) => order.id !== id);
-      showToast("订单已删除");
-      // TODO: 你可以调用删除订单的 API 接口
+      showToast("订单已取消");
+      orderData.value = orderData.value.filter((order) => order.id !== id);
+      deleteAllById([id]);
     })
     .catch(() => {
-      /* 用户取消操作 */
+      // 用户点击了取消，什么都不做
     });
 };
 
 onMounted(() => {
-  calculateCountdown();
+  getDataList();
   timer = setInterval(() => {
-    orders.value.forEach((order) => {
+    orderData.value.forEach((order) => {
       if (order.remainingSeconds > 0) order.remainingSeconds--;
     });
   }, 1000);
@@ -167,7 +150,7 @@ const onBack = () => {
 
 <style scoped>
 .pending-order-list {
-  padding: 16px;
+  overflow: auto;
 }
 .order-card {
   background: #fff;

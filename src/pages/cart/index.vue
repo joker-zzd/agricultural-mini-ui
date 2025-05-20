@@ -206,6 +206,7 @@ const checkout = () => {
   const selectedItems = cartItems.value.filter((item) =>
     checkedItems.value.includes(item.id)
   );
+  console.log("选中的商品：", selectedItems);
   const data = encodeURIComponent(JSON.stringify(selectedItems));
 
   createOrderParams.value = {
@@ -215,6 +216,8 @@ const checkout = () => {
       quantity: item.quantity,
       price: item.price * item.quantity,
       image: item.imageUrl,
+      name: item.name,
+      description: item.description,
     })),
   };
   createOrder({

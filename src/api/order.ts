@@ -42,3 +42,10 @@ export const updateShippingAddress = (id: number, address: string) => {
     url: `/api/order/updateAddress?id=${id}&address=${address}`,
   });
 };
+
+export const deleteAllById = (ids: number[]) => {
+  return request.delete({
+    url: "/api/order/delete",
+    data: ids,
+  });
+};
