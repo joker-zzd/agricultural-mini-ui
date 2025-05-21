@@ -12,54 +12,69 @@
     <van-empty v-if="orderData.length === 0" description="暂无待付款订单" />
 
     <div v-else>
-      <div v-for="order in orderData" :key="order.id" class="order-card">
-        <!-- 订单头部 -->
-        <div class="order-header">
-          <div class="order-id">订单号：{{ order.orderNo }}</div>
-          <van-tag type="warning">待付款</van-tag>
-        </div>
+      <!-- 下拉刷新 -->
+      <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+        <!-- 订单列表 -->
+        <van-list
+          v-model:loading="loading"
+          :finished="finished"
+          finished-text="没有更多订单了"
+          @load="onLoadMore"
+        >
+          <div v-for="order in orderData" :key="order.id" class="order-card">
+            <!-- 订单头部 -->
+            <div class="order-header">
+              <div class="order-id">订单号：{{ order.orderNo }}</div>
+              <van-tag type="warning">待付款</van-tag>
+            </div>
 
-        <!-- 商品列表 -->
-        <div v-for="item in order.orderItem" :key="item.id" class="product-row">
-          <img :src="item.image" class="thumb" />
-          <div class="product-info">
-            <div class="name">{{ item.name }}</div>
-            <div class="desc">{{ item.description }}</div>
-            <div class="price">￥{{ item.price.toFixed(2) }}</div>
+            <!-- 商品列表 -->
+            <div
+              v-for="item in order.orderItem"
+              :key="item.id"
+              class="product-row"
+            >
+              <img :src="item.image" class="thumb" />
+              <div class="product-info">
+                <div class="name">{{ item.name }}</div>
+                <div class="desc">{{ item.description }}</div>
+                <div class="price">￥{{ item.price.toFixed(2) }}</div>
+              </div>
+            </div>
+
+            <!-- 底部信息 -->
+            <div class="order-info">
+              <div class="price">应付金额：￥{{ order.totalAmount }}</div>
+              <div class="countdown">
+                倒计时：
+                <span v-if="order.remainingSeconds > 0">
+                  {{ formatCountdown(order.remainingSeconds) }}
+                </span>
+                <span v-else class="expired">已超时</span>
+              </div>
+            </div>
+
+            <div class="order-actions">
+              <van-button
+                size="small"
+                type="danger"
+                :disabled="order.remainingSeconds <= 0"
+                @click="payNow(order.id)"
+              >
+                立即支付
+              </van-button>
+              <van-button
+                size="small"
+                plain
+                type="default"
+                @click="cancelOrder(order.id)"
+              >
+                取消订单
+              </van-button>
+            </div>
           </div>
-        </div>
-
-        <!-- 底部信息 -->
-        <div class="order-info">
-          <div class="price">应付金额：￥{{ order.totalAmount }}</div>
-          <div class="countdown">
-            倒计时：
-            <span v-if="order.remainingSeconds > 0">
-              {{ formatCountdown(order.remainingSeconds) }}
-            </span>
-            <span v-else class="expired">已超时</span>
-          </div>
-        </div>
-
-        <div class="order-actions">
-          <van-button
-            size="small"
-            type="danger"
-            :disabled="order.remainingSeconds <= 0"
-            @click="payNow(order.id)"
-          >
-            立即支付
-          </van-button>
-          <van-button
-            size="small"
-            plain
-            type="default"
-            @click="cancelOrder(order.id)"
-          >
-            取消订单
-          </van-button>
-        </div>
-      </div>
+        </van-list>
+      </van-pull-refresh>
     </div>
   </div>
 </template>
@@ -96,23 +111,49 @@ const currentPage = ref(1);
 const pageSize = ref(4);
 let timer: ReturnType<typeof setInterval>;
 
-const getDataList = () => {
-  findByPage({
-    currentPage: currentPage.value,
-    pageSize: pageSize.value,
-    status: "WAIT_PAYMENT",
-  }).then((res) => {
-    const now = dayjs();
-    orderData.value = res.data.map((order: any) => {
-      const createdAt = dayjs(order.createdAt);
-      const diffSeconds = 24 * 60 * 60 - now.diff(createdAt, "second");
-      return {
-        ...order,
-        remainingSeconds: diffSeconds > 0 ? diffSeconds : 0,
-        _expiredHandled: false,
-      };
+const loading = ref(false);
+const finished = ref(false);
+const refreshing = ref(false);
+
+const getDataList = async (isRefresh = false) => {
+  loading.value = true;
+  try {
+    const res = await findByPage({
+      currentPage: currentPage.value,
+      pageSize: pageSize.value,
+      status: "WAIT_PAYMENT",
     });
-  });
+    if (res.code === 0) {
+      const now = dayjs();
+      const newData = res.data.map((order: any) => {
+        const createdAt = dayjs(order.createdAt);
+        const diffSeconds = 24 * 60 * 60 - now.diff(createdAt, "second");
+        return {
+          ...order,
+          remainingSeconds: diffSeconds > 0 ? diffSeconds : 0,
+          _expiredHandled: false,
+        };
+      });
+      const total = res.total ?? newData.length;
+      if (isRefresh) {
+        orderData.value = newData;
+      } else {
+        orderData.value.push(...newData);
+      }
+      finished.value = orderData.value.length >= total;
+    } else {
+      showToast("获取订单失败");
+      finished.value = true;
+    }
+  } catch (err) {
+    showToast("网络异常");
+    finished.value = true;
+  } finally {
+    setTimeout(() => {
+      refreshing.value = false;
+      loading.value = false;
+    }, 1000);
+  }
 };
 
 const formatCountdown = (seconds: number) => {
@@ -177,6 +218,20 @@ onBeforeUnmount(() => {
 const router = useRouter();
 const onBack = () => {
   router.back();
+};
+
+// 下拉刷新
+const onRefresh = () => {
+  currentPage.value = 1;
+  finished.value = false;
+  getDataList(true);
+};
+
+// 上滑加载更多
+const onLoadMore = () => {
+  if (finished.value) return;
+  currentPage.value += 1;
+  getDataList();
 };
 </script>
 
