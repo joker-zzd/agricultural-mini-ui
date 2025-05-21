@@ -59,7 +59,12 @@
             />
           </template>
           <template #footer>
-            <van-button size="small" type="primary">立即购买</van-button>
+            <van-button
+              size="small"
+              type="primary"
+              @click="toPayment(product.id)"
+              >立即购买</van-button
+            >
           </template>
         </van-card>
       </van-tab>
@@ -78,6 +83,7 @@ import {
 } from "@/api/home";
 import { showToast, Image as VanImage } from "vant";
 import { useRouter } from "vue-router";
+import { createOrder, CreateOrder } from "@/api/order";
 
 const router = useRouter();
 const search = ref("");
@@ -112,6 +118,11 @@ const priceRange = ref({
 });
 
 const categoriesData = ref([{ id: 0, name: "全部" }]);
+
+const createOrderParams = ref<CreateOrder>({
+  totalAmount: 0,
+  orderItems: [],
+});
 
 //方法区
 
@@ -188,15 +199,52 @@ const getCategoriesList = () => {
 const handleSkipDetail = (id: number) => {
   router.push(`/productDetail?id=${id}`);
 };
-const toPayment = async () => {
-  window.open("http://localhost:8082/mini/api/alipay/pay?id=19");
+const toPayment = (id: number) => {
+  createOrderParams.value = {
+    totalAmount: goods.value.find((item) => item.id === id).price,
+    orderItems: [
+      {
+        productId: id,
+        quantity: 1,
+        price: goods.value.find((item) => item.id === id).price,
+        image: goods.value.find((item: any) => item.id === id).imageUrl,
+        name: goods.value.find((item) => item.id === id).name,
+        description: goods.value.find((item) => item.id === id).description,
+      },
+    ],
+  };
+
+  createOrder({
+    ...createOrderParams.value,
+  }).then((res) => {
+    if (res.code === 0) {
+    } else {
+      showToast(res.message || "订单创建失败");
+    }
+  });
+
+  const selected = goods.value.find((g) => g.id === id);
+  if (!selected) return;
+
+  // 默认数量设为 1（可以根据业务调整）
+  const orderItem = {
+    ...selected,
+    quantity: 1,
+  };
+
+  const data = encodeURIComponent(JSON.stringify([orderItem]));
+  router.push({
+    path: "/orderConfirm",
+    query: {
+      data,
+    },
+  });
 };
 
 const changeActive = (active: number) => {};
 onMounted(() => {
   getGoodsList();
   getCategoriesList();
-  // toPayment();
 });
 </script>
 

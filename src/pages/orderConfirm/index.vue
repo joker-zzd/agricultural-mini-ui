@@ -100,7 +100,6 @@ onMounted(() => {
   if (encodeData) {
     try {
       orderData.value = JSON.parse(decodeURIComponent(encodeData as string));
-      console.log("订单数据", orderData.value);
     } catch (err) {
       console.error("订单数据解析失败:", err);
     }
