@@ -83,7 +83,7 @@
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { showToast, showConfirmDialog } from "vant";
 import { useRouter } from "vue-router";
-import { deleteAllById, findByPage } from "@/api/order";
+import { updateStatus, findByPage, OrderStatusEnum } from "@/api/order";
 import dayjs from "dayjs";
 import { pay } from "@/api/pay";
 
@@ -210,7 +210,7 @@ const cancelOrder = (id: number) => {
     message: "你确定要取消该订单吗？",
   })
     .then(() => {
-      deleteAllById([id]).then((res) => {
+      updateStatus(id, OrderStatusEnum.CANCELED).then((res) => {
         if (res.code === 0) {
           showToast("订单取消成功");
           getDataList();
@@ -235,7 +235,7 @@ onMounted(() => {
 
       if (order.remainingSeconds <= 0 && !order._expiredHandled) {
         order._expiredHandled = true;
-        deleteAllById([order.id]).then((res) => {
+        updateStatus(order.id, OrderStatusEnum.CANCELED).then((res) => {
           if (res.code === 0) {
             showToast("订单已超时，自动取消");
             orderData.value.splice(index, 1);

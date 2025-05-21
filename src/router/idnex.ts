@@ -98,6 +98,18 @@ const routes: Array<RouteRecordRaw> = [
     meta: { showTabbar: false },
     component: () => import("../pages/order/index.vue"),
   },
+  {
+    path: "/awaitingShipment",
+    name: "awaitingShipment",
+    meta: { showTabbar: false },
+    component: () => import("../pages/order/AwaitingShipment.vue"),
+  },
+  {
+    path: "/inTransit",
+    name: "InTransit",
+    meta: { showTabbar: false },
+    component: () => import("../pages/order/InTransit.vue"),
+  },
 ];
 
 // 创建 router 实例

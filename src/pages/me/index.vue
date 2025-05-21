@@ -24,8 +24,8 @@
     <div class="order-status-grid">
       <van-grid :column-num="4" clickable>
         <van-grid-item icon="pending-payment" text="待付款" to="/toBePaid" />
-        <van-grid-item icon="tosend" text="待发货" to="/toBePaid" />
-        <van-grid-item icon="logistics" text="运输中" to="/toBePaid" />
+        <van-grid-item icon="tosend" text="待发货" to="/awaitingShipment" />
+        <van-grid-item icon="logistics" text="运输中" to="/inTransit" />
         <van-grid-item icon="after-sale" text="售后/退款" to="/toBePaid" />
       </van-grid>
     </div>

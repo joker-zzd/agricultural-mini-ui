@@ -17,6 +17,14 @@ export const orderStatusMap: Record<string, string> = {
   CANCELED: "已取消",
 };
 
+export enum OrderStatusEnum {
+  WAIT_PAYMENT = "WAIT_PAYMENT", // 待付款
+  WAIT_DELIVER = "WAIT_DELIVER", // 待发货
+  WAIT_RECEIVE = "WAIT_RECEIVE", // 待收货
+  FINISHED = "FINISHED", // 已完成
+  CANCELED = "CANCELED", // 已取消
+}
+
 export const createOrder = (data: CreateOrder) => {
   return request.post({
     url: "api/order/add",
@@ -40,6 +48,12 @@ export const findByPage = (params: any) => {
 export const updateShippingAddress = (id: number, address: string) => {
   return request.put({
     url: `/api/order/updateAddress?id=${id}&address=${address}`,
+  });
+};
+
+export const updateStatus = (id: number, status: OrderStatusEnum) => {
+  return request.put({
+    url: `/api/order/updateStatus?id=${id}&status=${status}`,
   });
 };
 
