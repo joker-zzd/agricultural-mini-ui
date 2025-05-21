@@ -12,6 +12,9 @@ export interface AddCaerDTO {
   productId: number;
   skuId: number;
   quantity: number;
+  name: string;
+  description: string;
+  image: string;
 }
 
 export const addCart = (data: AddCaerDTO) => {

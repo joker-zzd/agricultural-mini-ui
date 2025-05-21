@@ -122,6 +122,7 @@ import { useRouter, useRoute } from "vue-router";
 import { showToast } from "vant";
 import { ref, onMounted } from "vue";
 import { findById, addCart, AddCaerDTO } from "@/api/productDetail";
+import { createOrder, CreateOrder } from "@/api/order";
 
 const router = useRouter();
 const route = useRoute();
@@ -148,7 +149,15 @@ const addCaerDTO = <AddCaerDTO>{
   productId: 0,
   skuId: 0,
   quantity: 0,
+  name: "",
+  description: "",
+  image: "",
 };
+
+const createOrderParams = ref<CreateOrder>({
+  totalAmount: 0,
+  orderItems: [],
+});
 
 //方法区
 const getProductDetail = async () => {
@@ -186,7 +195,6 @@ const confirmSkuAction = () => {
   const sku = product.value.skuList.find(
     (s: any) => s.id === selectedSkuId.value
   );
-
   if (!sku) return;
 
   addCaerDTO.productId = product.value.id;
@@ -210,8 +218,41 @@ const confirmSkuAction = () => {
         showToast(e.message);
       });
   } else {
-    showToast(`购买：${sku.name}`);
-    router.push("/order-confirm");
+    createOrderParams.value = {
+      totalAmount: sku.skuPrice * addCaerDTO.quantity,
+      orderItems: [
+        {
+          productId: product.value.id,
+          quantity: addCaerDTO.quantity,
+          price: sku.skuPrice,
+          image: product.value.imageUrl,
+          name: sku.skuName,
+          description: product.value.description,
+        },
+      ],
+    };
+    createOrder({
+      ...createOrderParams.value,
+    }).then((res) => {
+      if (res.code === 0) {
+      } else {
+        showToast(res.message || "订单创建失败");
+      }
+    });
+    const data = encodeURIComponent(
+      JSON.stringify([
+        {
+          productId: product.value.id,
+          skuId: sku.id,
+          quantity: addCaerDTO.quantity,
+          price: sku.skuPrice,
+          image: product.value.imageUrl,
+          name: sku.name,
+          description: product.value.description,
+        },
+      ])
+    );
+    router.push({ path: "/orderConfirm", query: { data } });
   }
 
   showSkuPopup.value = false;
