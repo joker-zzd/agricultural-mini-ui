@@ -110,6 +110,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { showTabbar: false },
     component: () => import("../pages/order/InTransit.vue"),
   },
+  {
+    path: "/addReview",
+    name: "addReview",
+    meta: { showTabbar: false },
+    component: () => import("../pages/reviews/addReview.vue"),
+  },
 ];
 
 // 创建 router 实例

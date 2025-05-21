@@ -1,6 +1,5 @@
 <template>
   <div class="order-list-page">
-    <!-- 顶部导航栏 -->
     <van-nav-bar
       title="我的订单"
       left-text="返回"
@@ -16,54 +15,71 @@
       @cancel="onCancel"
     />
 
-    <!-- 下拉刷新 -->
     <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-      <!-- 订单列表 -->
       <van-list
         v-model:loading="loading"
         :finished="finished"
         finished-text="没有更多订单了"
         @load="onLoadMore"
       >
-        <!-- 每个订单 -->
         <div
-          v-for="order in orders"
-          :key="order.id"
+          v-for="item in orderDisplayList"
+          :key="item.displayKey"
           style="margin-bottom: 16px; background-color: #fff; padding: 10px"
         >
-          <!-- 订单头部信息 -->
           <div
             style="
               margin-bottom: 8px;
               display: flex;
-              background-color: #fff;
               justify-content: space-between;
             "
           >
             <div style="display: flex; align-items: center; gap: 8px">
-              <span>订单号：{{ order.orderNo }}</span>
+              <span>订单号：{{ item.orderNo }}</span>
               <van-icon
                 name="description"
                 style="font-size: 16px; color: #bbb"
-                @click="copyOrderNo(order.orderNo)"
+                @click="copyOrderNo(item.orderNo)"
               />
             </div>
-            <van-tag :type="orderStatusColorMap[order.status] || 'primary'">{{
-              order.status
-            }}</van-tag>
+            <van-tag :type="orderStatusColorMap[item.statusText] || 'primary'">
+              {{ item.statusText }}
+            </van-tag>
           </div>
 
-          <!-- 每个商品 -->
           <van-card
-            style="background-color: #fff"
-            v-for="item in order.orderItem"
-            :key="item.id"
             :price="item.price.toFixed(2)"
             :thumb="item.image"
             :desc="`数量：${item.quantity}`"
-            @click="goToOrderDetail(order.id)"
+            style="background-color: #fff"
+            @click="goToOrderDetail(item.orderId)"
           />
+
+          <div
+            v-if="item.statusText === '已完成' || item.statusText === '已取消'"
+            style="text-align: right; margin-top: 8px"
+          >
+            <van-button
+              v-if="item.statusText === '已完成'"
+              size="small"
+              type="primary"
+              style="margin-right: 8px"
+              @click="goToComment(item.orderId, item.productId)"
+            >
+              去评价
+            </van-button>
+
+            <van-button
+              size="small"
+              type="danger"
+              plain
+              @click="confirmDelete(item.orderId)"
+            >
+              删除订单
+            </van-button>
+          </div>
         </div>
+
         <template #loading>
           <div style="text-align: center; padding: 16px">
             <van-loading type="spinner" size="24px" color="#999" />
@@ -77,10 +93,20 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { showToast, TagType } from "vant";
-import { findByPage } from "@/api/order";
+import { showToast, showConfirmDialog, TagType } from "vant";
+import { findByPage, deleteAllById } from "@/api/order";
 
-// 枚举转中文
+const router = useRouter();
+const orders = ref<any[]>([]);
+const orderDisplayList = ref<any[]>([]);
+const loading = ref(false);
+const finished = ref(false);
+const refreshing = ref(false);
+const currentPage = ref(1);
+const pageSize = 4;
+const searchOrderNo = ref("");
+
+// 枚举转中文状态
 const orderStatusMap: Record<string, string> = {
   WAIT_PAYMENT: "待付款",
   WAIT_DELIVER: "待发货",
@@ -97,41 +123,46 @@ const orderStatusColorMap: Record<string, TagType> = {
   已取消: "default",
 };
 
-const router = useRouter();
-const orders = ref<any[]>([]);
-const loading = ref(false);
-const finished = ref(false);
-const refreshing = ref(false);
-const currentPage = ref(1);
-const pageSize = 4;
-const searchOrderNo = ref("");
-
+// 获取订单列表
 const getOrderList = async (isRefresh = false) => {
   loading.value = true;
   try {
     const res = await findByPage({
       currentPage: currentPage.value,
-      pageSize: pageSize,
+      pageSize,
       orderNo: searchOrderNo.value || undefined,
     });
 
-    if (res.code === 0) {
-      const newOrders = res.data;
-      newOrders.forEach((order: any) => {
-        order.status = orderStatusMap[order.status] || order.status;
+    if (res.code === 0 && Array.isArray(res.data)) {
+      const rawOrders = res.data;
+      const flattened: any[] = [];
+
+      rawOrders.forEach((order: any) => {
+        const statusText = orderStatusMap[order.status] || order.status;
+        order.orderItem.forEach((item: any, idx: number) => {
+          flattened.push({
+            displayKey: `${order.id}-${idx}`,
+            orderId: order.id,
+            orderNo: order.orderNo,
+            statusText,
+            productId: item.productId,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+          });
+        });
       });
 
-      const total = res.total ?? newOrders.length;
-
       if (isRefresh) {
-        orders.value = newOrders;
+        orderDisplayList.value = flattened;
       } else {
-        orders.value.push(...newOrders);
+        orderDisplayList.value.push(...flattened);
       }
 
-      finished.value = orders.value.length >= total;
+      const total = res.total ?? flattened.length;
+      finished.value = orderDisplayList.value.length >= total;
     } else {
-      showToast("获取订单失败");
+      showToast(res.msg || "获取订单失败");
       finished.value = true;
     }
   } catch (err) {
@@ -139,8 +170,8 @@ const getOrderList = async (isRefresh = false) => {
     finished.value = true;
   } finally {
     setTimeout(() => {
-      refreshing.value = false;
       loading.value = false;
+      refreshing.value = false;
     }, 1000);
   }
 };
@@ -152,31 +183,45 @@ const onRefresh = () => {
   getOrderList(true);
 };
 
-// 上滑加载更多
+// 上滑加载
 const onLoadMore = () => {
   if (finished.value) return;
   currentPage.value += 1;
   getOrderList();
 };
 
-// 跳转订单详情
-const goToOrderDetail = (orderId: string) => {
+const goToOrderDetail = (orderId: number) => {
   router.push({ name: "OrderDetail", params: { id: orderId } });
 };
 
-// 返回上一页
-const goBack = () => {
-  router.push("/me");
+const goToComment = (orderId: number, productId: number) => {
+  router.push({ path: "/addReview", query: { productId, orderId } });
 };
 
-// 搜索
+const confirmDelete = (orderId: number) => {
+  showConfirmDialog({
+    title: "提示",
+    message: "确定要删除该订单吗？删除后无法恢复。",
+  })
+    .then(async () => {
+      const res = await deleteAllById([orderId]);
+      if (res.code === 0) {
+        showToast("订单删除成功");
+        currentPage.value = 1;
+        getOrderList(true);
+      } else {
+        showToast(res.msg || "删除失败");
+      }
+    })
+    .catch(() => {});
+};
+
 const onSearch = () => {
   currentPage.value = 1;
   finished.value = false;
   getOrderList(true);
 };
 
-// 取消搜索（清空输入框并刷新列表）
 const onCancel = () => {
   searchOrderNo.value = "";
   onSearch();
@@ -191,6 +236,10 @@ const copyOrderNo = (orderNo: string) => {
     .catch(() => {
       showToast("复制失败，请手动复制");
     });
+};
+
+const goBack = () => {
+  router.back();
 };
 
 onMounted(() => {
