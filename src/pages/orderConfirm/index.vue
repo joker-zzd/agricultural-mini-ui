@@ -108,11 +108,11 @@ onMounted(() => {
 });
 watchEffect(() => {
   const addr = addressStore.defaultAddress;
-  console.log("地址", addr);
-
   if (addr) {
     receiver.value.address = `${addr.province} ${addr.city} ${addr.county} ${addr.addressDetail}`;
   }
+
+  updateShippingAddress(id.value, receiver.value.address).then((res) => {});
 });
 
 const visibleItems = computed(() => {

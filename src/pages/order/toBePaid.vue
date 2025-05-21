@@ -85,6 +85,7 @@ import { showToast, showConfirmDialog } from "vant";
 import { useRouter } from "vue-router";
 import { deleteAllById, findByPage } from "@/api/order";
 import dayjs from "dayjs";
+import { pay } from "@/api/pay";
 
 interface OrderItem {
   id: number;
@@ -114,6 +115,11 @@ let timer: ReturnType<typeof setInterval>;
 const loading = ref(false);
 const finished = ref(false);
 const refreshing = ref(false);
+const payParams = ref({
+  orderNo: "",
+  totalAmount: 0,
+  subject: "",
+});
 
 const getDataList = async (isRefresh = false) => {
   loading.value = true;
@@ -164,7 +170,38 @@ const formatCountdown = (seconds: number) => {
 };
 
 const payNow = (id: number) => {
-  showToast(`跳转支付页面，订单ID：${id}`);
+  payParams.value = {
+    orderNo: orderData.value.find((order) => order.id === id)?.orderNo || "",
+    totalAmount:
+      orderData.value.find((order) => order.id === id)?.totalAmount || 0,
+    subject:
+      "订单编号：" +
+      (orderData.value.find((order) => order.id === id)?.orderNo || ""),
+  };
+  pay(payParams.value)
+    .then((htmlForm) => {
+      // htmlForm 是支付宝返回的支付表单（字符串）
+      if (htmlForm) {
+        // 创建一个容器插入到 body
+        const div = document.createElement("div");
+        div.style.display = "none";
+        div.innerHTML = htmlForm;
+        document.body.appendChild(div);
+
+        // 自动提交表单，支付宝页面会跳转
+        const form = div.querySelector("form");
+        if (form) {
+          form.submit();
+        } else {
+          showToast({ message: "支付表单解析失败", type: "fail" });
+        }
+      } else {
+        showToast({ message: "支付失败，未返回支付表单", type: "fail" });
+      }
+    })
+    .catch(() => {
+      showToast({ message: "支付请求失败", type: "fail" });
+    });
 };
 
 const cancelOrder = (id: number) => {
