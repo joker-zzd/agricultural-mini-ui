@@ -40,7 +40,7 @@ export const getOrderNo = () => {
 
 export const findByPage = (params: any) => {
   return request.get({
-    url: "/api/order/pageByPage",
+    url: "/api/order/findByPage",
     params,
   });
 };

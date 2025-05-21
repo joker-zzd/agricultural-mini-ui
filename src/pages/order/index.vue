@@ -60,7 +60,7 @@
             style="text-align: right; margin-top: 8px"
           >
             <van-button
-              v-if="item.statusText === '已完成'"
+              v-if="item.statusText === '已完成' && item.commented === 0"
               size="small"
               type="primary"
               style="margin-right: 8px"
@@ -97,7 +97,6 @@ import { showToast, showConfirmDialog, TagType } from "vant";
 import { findByPage, deleteAllById } from "@/api/order";
 
 const router = useRouter();
-const orders = ref<any[]>([]);
 const orderDisplayList = ref<any[]>([]);
 const loading = ref(false);
 const finished = ref(false);
@@ -149,6 +148,7 @@ const getOrderList = async (isRefresh = false) => {
             price: item.price,
             quantity: item.quantity,
             image: item.image,
+            commented: item.commented,
           });
         });
       });
