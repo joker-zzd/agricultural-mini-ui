@@ -52,7 +52,7 @@
             :thumb="item.image"
             :desc="`数量：${item.quantity}`"
             style="background-color: #fff"
-            @click="goToOrderDetail(item.orderId)"
+            @click="goToOrderDetail(item.productId)"
           />
 
           <div
@@ -190,8 +190,8 @@ const onLoadMore = () => {
   getOrderList();
 };
 
-const goToOrderDetail = (orderId: number) => {
-  router.push({ name: "OrderDetail", params: { id: orderId } });
+const goToOrderDetail = (productId: number) => {
+  router.push(`/productDetail?id=${productId}`);
 };
 
 const goToComment = (orderId: number, productId: number) => {
@@ -239,7 +239,7 @@ const copyOrderNo = (orderNo: string) => {
 };
 
 const goBack = () => {
-  router.back();
+  router.push("/me");
 };
 
 onMounted(() => {
