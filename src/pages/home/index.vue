@@ -80,7 +80,7 @@ import {
   findByPageAndCategoryId,
   SearchParams,
   SearchParamsById,
-} from "@/api/home";
+} from "@/api/product";
 import { showToast, Image as VanImage } from "vant";
 import { useRouter } from "vue-router";
 import { createOrder, CreateOrder } from "@/api/order";

@@ -61,6 +61,7 @@ import { useAddressStore } from "@/store/user";
 import { showToast } from "vant";
 import { pay, PayParams } from "@/api/pay";
 import { getOrderNo, updateShippingAddress } from "@/api/order";
+import { updateBySold } from "@/api/product";
 
 const route = useRoute();
 const router = useRouter();

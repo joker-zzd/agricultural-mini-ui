@@ -93,6 +93,7 @@ interface CartItem {
   quantity: number;
   skuId: number;
   skuName?: string;
+  productId: number;
 }
 
 const cartItems = ref<CartItem[]>([]);
@@ -206,12 +207,14 @@ const checkout = () => {
   const selectedItems = cartItems.value.filter((item) =>
     checkedItems.value.includes(item.id)
   );
+  console.log("选中的商品：", selectedItems);
+
   const data = encodeURIComponent(JSON.stringify(selectedItems));
 
   createOrderParams.value = {
     totalAmount: totalPrice.value,
     orderItems: selectedItems.map((item) => ({
-      productId: item.id,
+      productId: item.productId,
       quantity: item.quantity,
       price: item.price * item.quantity,
       image: item.imageUrl,
