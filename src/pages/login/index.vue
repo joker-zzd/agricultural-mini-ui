@@ -14,9 +14,9 @@
           v-model="form.username"
           name="username"
           label="用户名"
-          placeholder="请输入用户名"
+          placeholder="请输入用户名/邮箱"
           left-icon="user-o"
-          :rules="[{ required: true, message: '请输入用户名' }]"
+          :rules="[{ required: true, message: '请输入用户名/邮箱' }]"
         />
         <van-field
           v-model="form.password"
@@ -38,6 +38,11 @@
           <van-button round block type="primary" native-type="submit">
             登录
           </van-button>
+        </div>
+
+        <!-- 去注册 -->
+        <div class="register-link" @click="router.push('/register')">
+          还没有账号？<span class="register-text">去注册</span>
         </div>
       </van-form>
     </div>
@@ -128,5 +133,18 @@ const onSubmit = debounce(async () => {
   text-align: center;
   margin-bottom: 24px;
   color: #333;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 12px;
+  color: #999;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.register-text {
+  color: #00b578;
+  margin-left: 4px;
 }
 </style>

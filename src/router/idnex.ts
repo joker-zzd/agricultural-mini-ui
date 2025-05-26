@@ -116,6 +116,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { showTabbar: false },
     component: () => import("../pages/reviews/addReview.vue"),
   },
+  {
+    path: "/register",
+    name: "register",
+    meta: { showTabbar: false },
+    component: () => import("../pages/register/emailRegister.vue"),
+  },
 ];
 
 // 创建 router 实例

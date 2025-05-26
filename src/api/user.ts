@@ -10,6 +10,13 @@ export interface UpdatePasswordDTO {
   newPassword: string;
 }
 
+export interface UserEmailRegisterDTO {
+  username: string;
+  password: string;
+  email: string;
+  emailCode: string;
+}
+
 export interface LoginResponse {
   code?: number;
   message: string;
@@ -59,6 +66,19 @@ export const updateavatar = (avatar: string) => {
 export const updatePassword = (data: UpdatePasswordDTO) => {
   return request.post({
     url: `/api/user/updatePassword`,
+    data,
+  });
+};
+
+export const sendEmailCode = (email: string) => {
+  return request.post({
+    url: `/api/user/sendEmailCode?email=${email}`,
+  });
+};
+
+export const EmailRegister = (data: UserEmailRegisterDTO) => {
+  return request.post({
+    url: `/api/user/emailRegister`,
     data,
   });
 };
