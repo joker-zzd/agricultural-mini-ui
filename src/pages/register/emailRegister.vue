@@ -1,12 +1,6 @@
 <template>
   <div class="register-page">
     <div class="register-container">
-      <img
-        src="https://shop-1325336690.cos.ap-guangzhou.myqcloud.com/images/undraw_authentication_re_svpt.png"
-        alt="注册图"
-        class="register-image"
-      />
-
       <h2 class="register-title">创建农资商城账号</h2>
 
       <van-form @submit="onSubmit">
