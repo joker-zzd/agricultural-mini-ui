@@ -7,7 +7,7 @@ import { VantResolver } from "unplugin-vue-components/resolvers";
 // https://vite.dev/config/
 export default defineConfig({
   server: {
-    port: 7062,
+    port: 7061,
   },
   plugins: [
     vue(),
