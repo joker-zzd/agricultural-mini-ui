@@ -3,7 +3,7 @@ import { showToast } from "vant";
 
 const service = axios.create({
   // TODO
-  baseURL: "http://127.0.0.1:8082/mini",
+  baseURL: import.meta.env.VITE_API_BASE,
   timeout: 10000,
   withCredentials: true,
 });
