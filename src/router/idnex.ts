@@ -122,6 +122,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { showTabbar: false },
     component: () => import("../pages/register/emailRegister.vue"),
   },
+  {
+    path: "/feedback",
+    name: "feedback",
+    meta: { showTabbar: false },
+    component: () => import("../pages/feedback/index.vue"),
+  },
 ];
 
 // 创建 router 实例

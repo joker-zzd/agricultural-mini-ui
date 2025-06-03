@@ -16,6 +16,12 @@
           is-link
           @click="goToChangePassword"
         />
+        <van-cell
+          title="意见反馈"
+          icon="chat-o"
+          is-link
+          @click="goToFeedback"
+        />
       </van-cell-group>
     </div>
 
@@ -43,6 +49,10 @@ const goToProfileEdit = () => {
 
 const goToChangePassword = () => {
   router.push("/updatePassword");
+};
+
+const goToFeedback = () => {
+  router.push("/feedback");
 };
 
 const logout = () => {
