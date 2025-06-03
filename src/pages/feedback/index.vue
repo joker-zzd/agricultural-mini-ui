@@ -1,6 +1,6 @@
 <template>
   <div class="feedback-page">
-    <van-nav-bar title="意见反馈" left-arrow @click-left="goBack" />
+    <van-nav-bar @click-left="goBack" title="意见反馈" left-arrow />
 
     <van-form @submit="handleSubmit" style="margin-top: 12px">
       <div class="form-item">
@@ -16,9 +16,10 @@
 
       <div class="form-item">
         <van-uploader
-          v-model="form.imageList"
+          :after-read="onImageRead"
           :max-count="1"
-          :after-read="handleImageUpload"
+          :file-list="fileList"
+          @delete="onImageDelete"
         >
           <van-cell title="上传图片（可选）" icon="photo-o" is-link />
         </van-uploader>
@@ -43,56 +44,60 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
-import { showToast } from "vant";
 import { useRouter } from "vue-router";
-import request from "@/utils/request";
+import { showToast } from "vant";
+import { submitFeedback, uploadFeedbackImage } from "@/api/feedback";
 
 const router = useRouter();
 
 const form = ref({
   content: "",
-  image: "",
-  imageList: [],
+  image: "", // 最终提交的图片 URL
   contactDetails: "",
 });
 
-const goBack = () => {
-  router.back();
+const fileList = ref([]); // 展示用
+
+const onImageRead = async (response: any) => {
+  const url = response?.response?.url; // 注意这里
+  console.log("url", url);
+  // try {
+  //   const res = await uploadFeedbackImage(file.file);
+  //   console.log("上传结果", res);
+  //   if (res.code === 0 && res.data) {
+  //     form.value.image = res.data;
+  //     showToast("图片上传成功");
+  //   } else {
+  //     showToast(res.message || "上传失败");
+  //   }
+  // } catch (err) {
+  //   showToast("上传出错");
+  // }
 };
 
-const handleImageUpload = async (file) => {
-  const formData = new FormData();
-  formData.append("file", file.file);
-
-  try {
-    const res = await request.post("/api/file/upload", formData);
-    form.value.image = res.data;
-    showToast("图片上传成功");
-  } catch (err) {
-    showToast("上传失败");
-  }
+const onImageDelete = () => {
+  form.value.image = "";
+  fileList.value = [];
 };
 
 const handleSubmit = async () => {
   try {
-    const payload = {
-      content: form.value.content,
-      image: form.value.image,
-      contactDetails: form.value.contactDetails,
-    };
-    await request.post("/api/feedback/save", payload);
-    showToast("提交成功");
-    form.value = {
-      content: "",
-      image: "",
-      imageList: [],
-      contactDetails: "",
-    };
+    const res = await submitFeedback(form.value);
+    if (res.code === 0) {
+      showToast("反馈提交成功");
+      router.back();
+    } else {
+      showToast(res.message || "提交失败");
+    }
   } catch (err) {
     showToast("提交失败");
   }
+};
+
+const goBack = () => {
+  router.back();
 };
 </script>
 
