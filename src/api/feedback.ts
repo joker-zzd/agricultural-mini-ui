@@ -11,11 +11,16 @@ export const submitFeedback = (data: {
   });
 };
 
-export const uploadFeedbackImage = (file: File) => {
+export const uploadFeedbackImage = (target: { file: File }) => {
+  const formData = new FormData();
+  formData.append("file", target.file);
   return request.post({
-    url: `/api/feedback/upload?file=${file}`,
-    headers: {
-      "Content-Type": "multipart/form-data",
+    url: `/api/file/upload`,
+    data: formData,
+    config: {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     },
   });
 };

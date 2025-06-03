@@ -16,9 +16,9 @@
 
       <div class="form-item">
         <van-uploader
+          v-model="fileList"
           :after-read="onImageRead"
           :max-count="1"
-          :file-list="fileList"
           @delete="onImageDelete"
         >
           <van-cell title="上传图片（可选）" icon="photo-o" is-link />
@@ -54,37 +54,43 @@ const router = useRouter();
 
 const form = ref({
   content: "",
-  image: "", // 最终提交的图片 URL
+  image: [] as string[], // 存储上传的图片URL
   contactDetails: "",
 });
 
-const fileList = ref([]); // 展示用
+const fileList = ref<{ url: string }[]>([]); // 展示用
 
-const onImageRead = async (response: any) => {
-  const url = response?.response?.url; // 注意这里
-  console.log("url", url);
-  // try {
-  //   const res = await uploadFeedbackImage(file.file);
-  //   console.log("上传结果", res);
-  //   if (res.code === 0 && res.data) {
-  //     form.value.image = res.data;
-  //     showToast("图片上传成功");
-  //   } else {
-  //     showToast(res.message || "上传失败");
-  //   }
-  // } catch (err) {
-  //   showToast("上传出错");
-  // }
+const onImageRead = async (file: any) => {
+  uploadFeedbackImage(file)
+    .then((res) => {
+      if (res?.code === 0) {
+        const url = res.data;
+        form.value.image = [url];
+        fileList.value = [{ url }];
+        console.log(fileList.value);
+      } else {
+        showToast(res.message || "图片上传失败");
+      }
+    })
+    .catch(() => {
+      showToast("图片上传失败");
+    });
 };
 
 const onImageDelete = () => {
-  form.value.image = "";
+  form.value.image = [];
   fileList.value = [];
 };
 
 const handleSubmit = async () => {
   try {
-    const res = await submitFeedback(form.value);
+    const formData = {
+      content: form.value.content,
+      image: form.value.image[0] || "", // 只上传第一张图片
+      contactDetails: form.value.contactDetails,
+    };
+
+    const res = await submitFeedback(formData);
     if (res.code === 0) {
       showToast("反馈提交成功");
       router.back();
