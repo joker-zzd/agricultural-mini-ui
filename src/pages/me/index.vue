@@ -6,7 +6,7 @@
         <van-image round width="48" height="48" :src="userStore.avatar" />
       </template>
       <template #title>
-        <div class="nickname">{{ userStore.nickname || "未登录" }}</div>
+        <div class="nickname">{{ userStore.nickname || "" }}</div>
       </template>
       <template #right-icon>
         <router-link to="/settings">
