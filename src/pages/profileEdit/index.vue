@@ -62,6 +62,9 @@ import { useUserStore } from "@/store/user";
 const userStore = useUserStore();
 const user = userStore.user;
 
+const baseApi = import.meta.env.VITE_API_BASE;
+const uploadUrl = `${baseApi}/api/file/upload`;
+
 // 性别选择
 const showGenderPicker = ref(false);
 const genderOptions = [
@@ -84,9 +87,9 @@ const handleUpdateNickname = () => {
 
 // 更新性别
 const updateGender = (option: any) => {
-  user.gender = option.value;
+  user.sex = option.value;
   showGenderPicker.value = false;
-  updateSex(user.gender)
+  updateSex(user.sex)
     .then((res) => {
       if (res.code === 0) {
         showToast("性别已修改");
@@ -113,18 +116,14 @@ const onAvatarSelected = async (e: Event) => {
     formData.append("file", file);
 
     try {
-      const uploadResponse = await fetch(
-        "http://127.0.0.1:8082/mini/api/file/upload",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "POST",
+        body: formData,
+      });
       const result = await uploadResponse.json();
-      console.log("result", result.url);
 
       if (result.code === 0) {
-        const avatarUrl = result.url; // 获取上传的头像 URL
+        const avatarUrl = result.data; // 获取上传的头像 URL
         // 调用封装好的更新头像接口
         updateavatar(avatarUrl)
           .then((updateRes: any) => {
