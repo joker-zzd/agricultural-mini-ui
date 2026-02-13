@@ -27,6 +27,11 @@
         <p>地址：北京市朝阳区未来农业科技园A座</p>
       </section>
 
+        <!-- 新增视频跳转按钮 -->
+      <div class="video-button">
+        <van-button type="primary" block @click="goToVideo">观看商城介绍视频</van-button>
+      </div>
+
       <div class="footer">© 2025 农资优选商城 | 京ICP备20250101号</div>
     </div>
   </div>
@@ -36,6 +41,10 @@
 import { useRouter } from "vue-router";
 const router = useRouter();
 const goBack = () => router.back();
+
+const goToVideo = () => {
+  router.push("/videoPage");
+};
 </script>
 
 <style scoped>

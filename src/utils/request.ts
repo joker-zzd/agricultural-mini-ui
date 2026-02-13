@@ -1,3 +1,4 @@
+import router from "@/router/idnex";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { showToast } from "vant";
 
@@ -28,7 +29,19 @@ service.interceptors.response.use(
     return response.data;
   },
   (error) => {
-    showToast(error.message || "服务器错误");
+  const { response } = error;
+  if(response&& response.status === 401) {
+    const currentRoute = router.currentRoute.value;
+    if(!currentRoute.meta.requireAuth) {
+      showToast("登录已失效，请重新登录");
+      router.push({
+        path: "/login",
+        query: { redirect: currentRoute.fullPath },
+      });
+    }
+  }
+    
+     
     return Promise.reject(error);
   }
 );

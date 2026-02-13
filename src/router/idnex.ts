@@ -10,21 +10,24 @@ const routes: Array<RouteRecordRaw> = [
     path: "/login",
     name: "login",
     component: () => import("../pages/login/index.vue"),
+    meta: { requireAuth: false }
   },
   {
     path: "/",
     redirect: "/home",
+    meta: { requireAuth: false }
   },
   {
     path: "/home",
     name: "home",
-    meta: { showTabbar: true },
+    meta: { showTabbar: true, requireAuth: false },
     component: () => import("../pages/home/index.vue"),
   },
   {
     path: "/productDetail",
     name: "productDetail",
     component: () => import("../pages/productDetail/index.vue"),
+    meta: { requireAuth: false }
   },
   {
     path: "/reviews",
@@ -128,12 +131,31 @@ const routes: Array<RouteRecordRaw> = [
     meta: { showTabbar: false },
     component: () => import("../pages/feedback/index.vue"),
   },
+  {
+    path: "/videoPage",
+    name: "videoPage",
+    meta: { showTabbar: false },
+    component: () => import("../pages/videoPage/index.vue"),
+  }
 ];
 
 // 创建 router 实例
 const router = createRouter({
   history: createWebHistory(), // 使用 HTML5 History 模式
   routes,
+});
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem("token");
+  if(to.meta.requireAuth && !token) {
+    next({
+      path: "/login",
+      query: { redirect: to.fullPath },
+    });
+  }
+  else {
+    next();
+  }
 });
 
 export default router;
