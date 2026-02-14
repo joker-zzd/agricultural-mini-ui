@@ -74,7 +74,7 @@ const onLoad = async () => {
 };
 
 const goToVideo = (id: number) => {
-  router.push(`/video/${id}`);
+  router.push(`/videoPlay/${id}`);
 };
 </script>
 

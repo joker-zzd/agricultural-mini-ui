@@ -136,6 +136,12 @@ const routes: Array<RouteRecordRaw> = [
     name: "videoPage",
     meta: { showTabbar: false },
     component: () => import("../pages/videoPage/index.vue"),
+  },
+  {
+    path: `/videoPlay/:id`,
+    name: "videoPlay",
+    meta: { showTabbar: false },
+    component: () => import("../pages/videoPage/videoPlayback.vue"),
   }
 ];
 

@@ -18,3 +18,9 @@ export const listOnlineVideos = (params: SearchParams) => {
     params
   })
 }
+
+export const findById = (id: number) => {
+  return request.get({
+    url: `/api/video/findById/${id}`
+  })
+}
